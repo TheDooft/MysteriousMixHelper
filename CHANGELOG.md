@@ -1,125 +1,29 @@
 # Changelog
 
-## v1.9.2
-
-- Ofi the Sly is a woman. The French strings called her "Ofi le Malin", which
-  was both the wrong gender and a name I had made up — the client calls her
-  **Ofi la Sournoise**. Corrected in the locale table, the TOC's French notes,
-  and the English pronouns through the documentation.
-- Carries the CurseForge project id, so the packager can upload.
-
-## v1.9.1
-
-- Smoothed the bubble falloff: four steps left visible rings on the larger
-  ones, so it is eight now and generated rather than hand-written. The inner
-  discs are anchored to the outermost, so the animation still moves one anchor
-  per bubble however many layers it is made of.
-
-## v1.9.0
-
-- Bubbles glow instead of sitting flat. A masked texture can only give a solid
-  disc with one hard edge, so each bubble is now four concentric discs whose
-  additive blending sums to a bright core falling away to nothing.
-
-## v1.8.1
-
-- The bubbles drew as squares: `SetMask` has no effect on a `SetColorTexture`
-  fill. They are now a plain white texture file tinted green with the mask set
-  first, which is the pairing the game itself uses to round off an icon.
-
-## v1.8.0
-
-- The bubbles are round again. They were drawn with the loading spinner's
-  StreamCircle, which is an arc, not a circle — invisible at 13px, but once
-  they grew to 38px every one read as a crescent. A bubble is now a colour fill
-  rounded off by the portrait mask, so it stays a clean circle at any size.
-- Opacity now comes off with size, so a large bubble reads as haze rather than
-  a blob while the small ones stay crisp.
-
-## v1.7.0
-
-- Bigger bubbles: up to 38px across rather than 22, and swaying wider. Eighteen
-  of them, so the window does not get crowded at that size.
-- Dropped the effect-model alternative introduced in 1.6 — it did not look good
-  in the client. Back to a plain on/off switch, and a setting saved by 1.6
-  carries over. `/mmh bubbles`.
-
-## v1.6.0
-
-- Tried an in-game effect model behind the table as an alternative to the drawn
-  bubbles, with live framing controls. Removed again in 1.7; see that entry.
-- The bubbles are less shy — more of them, larger, and up to 32% opacity rather
-  than 13%.
-- Fixed the saved settings sharing the defaults table, which would have let a
-  changed value quietly rewrite the default it is meant to be restorable to.
-
-## v1.5.0
-
-- Ofi's cauldron now simmers behind the table: faint bubbles rise, sway and
-  thin out before the top. Purely decorative, and off with `/mmh bubbles` or
-  the "Keep the cauldron simmering" option.
-
-## v1.4.0
-
-- On a character that cannot take the daily yet, the bottom line now names the
-  next step towards unlocking it, and hovering that line lays out the whole
-  route with what is already done ticked off. Quest titles come from the
-  client, so they arrive in your language.
-- The window now also opens at Ofi for a character still working up to the
-  daily — previously "only with the quest in your log" hid it from exactly the
-  character that most needed telling. The option is renamed to match.
-- Says when today's mix has already been spent, including the case where
-  another character in the warband spent it.
-- Removed the "where to find it" note from ingredient tooltips. All three list
-  the same container on Wowhead, so it said the same thing three times; whether
-  separate treasures favour separate ingredients is disputed between players
-  and not something this addon should assert.
-
-## v1.3.0
-
-- Ingredient tooltips now say where to find more: the container they open out
-  of, how often a container holds that particular one, and that they can be
-  bought rather than farmed.
-- Hovering the cauldron on the title bar shows the version and a thank-you to
-  Lazey, whose Wowhead comment is where the table of combinations comes from.
-  `/mmh help` prints the same credit.
-
-## v1.2.0
-
-- Collected offerings are far easier to pick out: the tick has a column of its
-  own instead of riding on the icon's corner, and the row gets a green wash and
-  a green edge bar. The three row states now use text colours that are actually
-  far apart — previously "collected" and "cannot afford" were within a few
-  hundredths of each other and the list read as one grey block.
-- The icons in the "still need in total" line are real controls now, so hovering
-  one shows the ingredient, what you carry, what you have stored, how much the
-  combinations you have left still want, and the shortfall. The column headers
-  show the same tooltip.
-
-## v1.1.0
-
-- Each combination now shows the icon of the offering it produces, with the
-  collected tick riding on the corner of that icon.
-- Reworked the window's look: flat dark panel, accent title bar, zebra rows,
-  hover highlight, a status bar down the left edge of each row and a progress
-  bar along the bottom.
-- Hovering a row now shows the offering's own item tooltip above the ingredient
-  breakdown.
-- Fixed how achievement progress is matched. Each criterion is keyed by the
-  offering's item id, which is what the criterion carries as its asset — the
-  previous code treated those numbers as criteria ids, which would have left a
-  non-English client reporting progress as unavailable.
-
 ## v1.0.0
 
-- First release.
-- Window opens at Ofi the Sly while you are on Mixing Mysteries, listing all ten
-  ingredient combinations against what you are carrying.
-- Ticks off the combinations already credited towards Mysterious Mix Master, and
-  takes the offering names from the achievement's own criteria so they arrive in
-  your language.
-- Marks a suggested mix: of the ones you can afford today, the one that leaves
+First release.
+
+At Ofi the Sly, during the Mixing Mysteries daily on The Coiled Isle:
+
+- All ten ingredient combinations, laid out against what is actually in your
+  bags — a bank is no use standing in front of her.
+- The ones the **Mysterious Mix Master** achievement already has are ticked off
+  and dimmed, so there is nothing to cross-reference.
+- One mix is suggested: of the ones you can afford today, the one that leaves
   the most of the others still within reach.
-- Footer totals what the combinations you have left still need in all.
-- Options for auto-open, auto-close, dimming collected offerings, counting
-  stored items and locking the window. `/mmh` for the command list.
+- The footer totals what your remaining combinations still need, which is what
+  you actually want to know before going treasure hunting.
+- On a character that cannot take the daily yet, it says what is left to do
+  first — campaign progress is per character even though the isle is not.
+- It also says when today's mix has already been spent, including when another
+  character in your warband spent it.
+- Offering names come from the achievement's own criteria, so they arrive in
+  your language. Interface strings are in English and French.
+- Ofi's cauldron simmers away behind the table. `/mmh bubbles` if you would
+  rather it did not.
+
+`/mmh` to open the window anywhere, `/mmh help` for the options.
+
+The table of combinations is Lazey's work, from their comment on the Wowhead
+achievement page. Thank you.
