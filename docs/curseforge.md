@@ -49,7 +49,8 @@ guess costs every character you own a day.
 Target her and this opens:
 
 - **All ten combinations**, against what is actually in your bags
-- **Green** — you can make it right now. **Ticked** — the achievement already has it.
+- **Green** — you can make it right now
+- **Ticked** — the achievement already has it
 - **One in gold** — of the mixes you can afford today, the one that leaves the
   most of the others still within reach
 - **The total** your remaining combinations still need, so you know what to farm
@@ -79,7 +80,8 @@ tous vos personnages.
 Ciblez-la et ceci s'ouvre :
 
 - **Les dix combinaisons**, face à ce que vous avez réellement dans vos sacs
-- **En vert** : réalisable maintenant. **Cochée** : le haut fait l'a déjà.
+- **En vert** : réalisable maintenant
+- **Cochée** : le haut fait l'a déjà
 - **Une en or** : parmi celles à votre portée aujourd'hui, celle qui laisse le
   plus des autres accessibles
 - **Le total** que réclament vos combinaisons restantes, pour savoir quoi farmer
