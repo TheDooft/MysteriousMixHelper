@@ -97,11 +97,13 @@ screen. Each option can also be toggled by name, e.g. `/mmh autoHide`.
 | `bubbles` | on | Simmer the cauldron behind the table. Decoration only. |
 | `locked` | off | Stop the window being dragged. |
 
-Each bubble is a flat white texture tinted green, rounded off by Blizzard's
-portrait mask and blended additively. The mask has to be set before the texture,
-and the texture has to be a real file — a mask over a `SetColorTexture` fill has
-no effect and draws squares. Size, count, speed and opacity are the `BUBBLE_*`
-constants at the top of `UI.lua`.
+Each bubble is four concentric discs — a flat white texture tinted green,
+rounded off by Blizzard's portrait mask, blended additively so the layers sum to
+a soft core. Two things there are load-bearing: the mask must be set before the
+texture, and the texture must be a real file, because a mask over a
+`SetColorTexture` fill has no effect and draws squares. Size, count, speed,
+opacity and the layer falloff are the `BUBBLE_*` constants at the top of
+`UI.lua`.
 
 An in-game effect model was tried here instead (v1.6, commit `2036755`) and did
 not look good in the client; the bubbles stayed.

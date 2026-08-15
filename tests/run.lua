@@ -311,12 +311,33 @@ do
 	-- crescents, and a mask over a colour fill drew squares. It has to be a
 	-- real texture file with the mask set first.
 	do
-		local texture = ns.bubbles[1].texture
+		local texture = ns.bubbles[1].textures[1]
 		check("each is a real texture file, not a colour fill",
 			type(texture:GetTexture()) == "string")
 		check("rounded off by a mask", texture.mask ~= nil)
 		check("with the mask set first", texture.maskedBeforeTexture == true)
 		check("and blended additively", texture.blend == "ADD")
+	end
+
+	-- A single masked disc is flat. The glow comes from concentric discs summing
+	-- additively, so the layers have to shrink inwards and no one of them may
+	-- carry the whole opacity.
+	do
+		local bubble = ns.bubbles[1]
+		check("a bubble is several layers", #bubble.textures == #ns.BUBBLE_LAYERS
+			and #ns.BUBBLE_LAYERS > 1)
+
+		local shrinking, total = true, 0
+		for index, layer in ipairs(ns.BUBBLE_LAYERS) do
+			if index > 1 and layer[1] >= ns.BUBBLE_LAYERS[index - 1][1] then
+				shrinking = false
+			end
+			total = total + layer[2]
+		end
+		check("each layer is smaller than the last", shrinking)
+		check("the outermost spans the full size", ns.BUBBLE_LAYERS[1][1] == 1)
+		check("and together they reach full opacity, not more",
+			math.abs(total - 1) < 0.02)
 	end
 	check("they are scattered on the first fill, not all at the bottom",
 		ns.bubbles[1].y ~= ns.bubbles[2].y or ns.bubbles[2].y ~= ns.bubbles[3].y)
@@ -331,11 +352,24 @@ do
 	for _, bubble in ipairs(ns.bubbles) do
 		lowest = math.min(lowest, bubble.y)
 		highest = math.max(highest, bubble.y)
-		if bubble.texture:GetAlpha() > ns.BUBBLE_ALPHA[2] then faded = false end
+		for _, texture in ipairs(bubble.textures) do
+			if texture:GetAlpha() > ns.BUBBLE_ALPHA[2] then faded = false end
+		end
 	end
 	check("none has escaped the bottom", lowest >= 0)
 	check("none has climbed past the top", highest < ns.BUBBLE_TRAVEL)
 	check("and none is ever more than faint", faded)
+
+	-- Checked once the animation has actually assigned alphas: no single disc
+	-- may carry the bubble, or the glow collapses back to a flat sticker.
+	do
+		local bubble = ns.bubbles[1]
+		local strongest = 0
+		for _, texture in ipairs(bubble.textures) do
+			strongest = math.max(strongest, texture:GetAlpha())
+		end
+		check("no single layer carries the whole bubble", strongest < bubble.peak)
+	end
 
 	-- Position is set through the widget, which the harness does not model, so
 	-- the sway is checked on the state the maths actually runs on.
@@ -366,14 +400,16 @@ do
 	SlashCmdList.MYSTERIOUSMIXHELPER("bubbles")
 	local hidden = true
 	for _, bubble in ipairs(ns.bubbles) do
-		if bubble.texture:IsShown() then hidden = false end
+		for _, texture in ipairs(bubble.textures) do
+			if texture:IsShown() then hidden = false end
+		end
 	end
 	check("the option puts them out", hidden)
 	local still = ns.bubbles[1].y
 	H.Tick(0.05, 10)
 	check("and stops the animation", ns.bubbles[1].y == still)
 	SlashCmdList.MYSTERIOUSMIXHELPER("bubbles")
-	check("and lights them again", ns.bubbles[1].texture:IsShown())
+	check("and lights them again", ns.bubbles[1].textures[1]:IsShown())
 
 	-- 1.6 briefly made this a three-way choice. A saved setting from that build
 	-- has to survive the way back.

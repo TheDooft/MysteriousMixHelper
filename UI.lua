@@ -68,6 +68,19 @@ local BUBBLE_INSET   = 4            -- above the bottom edge
 -- haze and lets the small ones stay crisp.
 local BUBBLE_SIZE_FADE = 0.55
 
+-- A masked texture gives a flat disc with one hard edge, which reads as a
+-- sticker rather than something glowing in a liquid. There is no radial
+-- gradient to be had from a texture and a mask, so each bubble is instead
+-- built from several concentric discs; blended additively they sum to a bright
+-- core falling away to nothing. Each entry is {share of the full size, share
+-- of the bubble's opacity}, largest first.
+local BUBBLE_LAYERS = {
+	{ 1.00, 0.24 },
+	{ 0.76, 0.24 },
+	{ 0.52, 0.26 },
+	{ 0.28, 0.26 },
+}
+
 --------------------------------------------------------------------------------
 -- Layout
 --------------------------------------------------------------------------------
@@ -112,6 +125,7 @@ local BUBBLE_TRAVEL = HEIGHT - TITLE_H - BUBBLE_SIZE[2] - BUBBLE_INSET * 2
 ns.BUBBLE_TRAVEL = BUBBLE_TRAVEL
 ns.BUBBLE_COUNT, ns.BUBBLE_ALPHA = BUBBLE_COUNT, BUBBLE_ALPHA
 ns.BUBBLE_SIZE, ns.BUBBLE_SIZE_FADE = BUBBLE_SIZE, BUBBLE_SIZE_FADE
+ns.BUBBLE_LAYERS = BUBBLE_LAYERS
 
 -- The last state drawn, so a tooltip opening later can quote the same numbers
 -- the window is showing rather than recomputing them.
@@ -200,7 +214,11 @@ local function ResetBubble(bubble, atBottom)
 	-- On the first fill they are scattered up the window, so it is already
 	-- simmering when it opens rather than starting empty.
 	bubble.y     = atBottom and 0 or math.random() * BUBBLE_TRAVEL
-	bubble.texture:SetSize(bubble.size, bubble.size)
+
+	for index, layer in ipairs(BUBBLE_LAYERS) do
+		local size = bubble.size * layer[1]
+		bubble.textures[index]:SetSize(size, size)
+	end
 end
 
 local function StepBubbles(elapsed)
@@ -215,27 +233,38 @@ local function StepBubbles(elapsed)
 		-- Swell in off the bottom, thin out before the top: no bubble should
 		-- ever appear or vanish mid-window.
 		local fade = math.min(1, progress * 8) * math.min(1, (1 - progress) * 5)
-		bubble.texture:SetAlpha(bubble.peak * fade)
-		bubble.texture:ClearAllPoints()
-		bubble.texture:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT",
-			bubble.x + math.sin(bubble.phase) * bubble.sway,
-			BUBBLE_INSET + bubble.y)
+		local centreX = bubble.x + math.sin(bubble.phase) * bubble.sway + bubble.size / 2
+		local centreY = BUBBLE_INSET + bubble.y + bubble.size / 2
+
+		-- Every layer shares one centre, so the discs stay concentric whatever
+		-- their sizes.
+		for index, layer in ipairs(BUBBLE_LAYERS) do
+			local texture = bubble.textures[index]
+			texture:SetAlpha(bubble.peak * layer[2] * fade)
+			texture:ClearAllPoints()
+			texture:SetPoint("CENTER", frame, "BOTTOMLEFT", centreX, centreY)
+		end
 	end
 end
 
 local function CreateBubbles(parent)
 	local list = {}
 	for index = 1, BUBBLE_COUNT do
-		-- Sub-level 2 puts them over the panel background; the rows are child
-		-- frames, so text and icons stay in front without any further ordering.
-		local texture = parent:CreateTexture(nil, "BACKGROUND", nil, 2)
-		-- Mask before texture: a mask rewrites the texture coordinates, so
-		-- Blizzard's own code always sets it first.
-		texture:SetMask(BUBBLE_MASK)
-		texture:SetTexture(BUBBLE_TEXTURE)
-		texture:SetVertexColor(unpack(BUBBLE_COLOR))
-		texture:SetBlendMode("ADD")
-		list[index] = { texture = texture }
+		local bubble = { textures = {} }
+		for layer = 1, #BUBBLE_LAYERS do
+			-- Sub-level 2 puts them over the panel background; the rows are
+			-- child frames, so text and icons stay in front without any
+			-- further ordering.
+			local texture = parent:CreateTexture(nil, "BACKGROUND", nil, 2)
+			-- Mask before texture: a mask rewrites the texture coordinates, so
+			-- Blizzard's own code always sets it first.
+			texture:SetMask(BUBBLE_MASK)
+			texture:SetTexture(BUBBLE_TEXTURE)
+			texture:SetVertexColor(unpack(BUBBLE_COLOR))
+			texture:SetBlendMode("ADD")
+			bubble.textures[layer] = texture
+		end
+		list[index] = bubble
 	end
 	return list
 end
@@ -248,9 +277,9 @@ local function ApplyBubbles()
 	for _, bubble in ipairs(bubbles) do
 		if ns.db.bubbles then
 			ResetBubble(bubble, false)
-			bubble.texture:Show()
-		else
-			bubble.texture:Hide()
+		end
+		for _, texture in ipairs(bubble.textures) do
+			texture:SetShown(ns.db.bubbles)
 		end
 	end
 end

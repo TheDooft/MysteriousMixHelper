@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.9.0
+
+- Bubbles glow instead of sitting flat. A masked texture can only give a solid
+  disc with one hard edge, so each bubble is now four concentric discs whose
+  additive blending sums to a bright core falling away to nothing.
+
 ## v1.8.1
 
 - The bubbles drew as squares: `SetMask` has no effect on a `SetColorTexture`
