@@ -8,6 +8,9 @@ is read in. A French version follows it — the addon ships frFR strings, so it 
 worth pasting underneath the English one on the same page rather than leaving
 French players to guess.
 
+Both are deliberately short. A longer version that walked through every feature
+is in the history at commit `cb3864b` if the page ever needs filling out.
+
 ---
 
 ## Form fields
@@ -35,166 +38,60 @@ would duplicate the release and bypass the changelog carving.
 
 ## Description — English
 
-### The problem
+### Ten combinations. One try a day. No feedback whatsoever.
 
-Every day, Ofi the Sly asks you for three ingredients for her stew. There are
-three kinds, you hand them over one at a time, and nothing stops you handing over
-the same one twice. That is ten combinations, ten different offerings, and the
-**Mysterious Mix Master** achievement wants every single one of them.
+Ofi the Sly wants three ingredients for her stew. Three kinds, handed over one at
+a time, repeats allowed — that is ten combinations, ten different offerings, and
+**Mysterious Mix Master** wants every one of them. She gives you no hint while
+you choose, and the quest is a daily shared across your whole warband, so a wrong
+guess costs every character you own a day.
 
-Here is the fun part: Ofi gives you no feedback at all while you choose. No
-bubbling, no glow, no "ooh, that's the good stuff". Just a dialogue box that
-changes about four words if you squint at it. And the quest is a daily, shared
-across your entire warband, so one wrong guess costs you a day — for every
-character you own, at once.
+Target her and this opens:
 
-Ten offerings. One attempt per day. No way to tell what you have already done
-without opening the achievement pane and cross-referencing a table someone
-kindly typed up on the internet.
+- **All ten combinations**, against what is actually in your bags
+- **Green** — you can make it right now. **Ticked** — the achievement already has it.
+- **One in gold** — of the mixes you can afford today, the one that leaves the
+  most of the others still within reach
+- **The total** your remaining combinations still need, so you know what to farm
+- **On an alt** — what is left before she will even offer you the daily
 
-You could do that. Or you could target Ofi and read one window.
+Names come from the achievement's own criteria, so they arrive in your language.
 
-### What it does
+`/mmh` opens it anywhere. `/mmh help` lists the options.
 
-Target Ofi the Sly with the daily in your log and this opens:
-
-- **Ten rows, one per combination**, each wearing the icon of the offering it
-  makes, against three columns of what you are actually carrying.
-- **Green** means you can make it right now. It counts your bags only, because
-  your bank is not standing next to you and neither is your warband.
-- **Ticked and greyed out** means the achievement already has it. No more
-  squinting at the criteria list.
-- **One row in gold** is the suggested mix: of the ones you can afford today, the
-  one that leaves the most of the others still within reach. It is a suggestion,
-  not an order. You are the one holding the knucklebones.
-- **The footer** keeps score: how many you have collected, how many you can make
-  right now, and the total ingredients your remaining combinations still want.
-  From a standing start that is ten of each, which is a number worth knowing
-  before you go treasure hunting.
-
-Hover anything and it tells you more: the offering's own tooltip on a row, and
-on any ingredient, what you carry, what you have stored elsewhere, and how much
-of it the mixes you have left are going to want.
-
-### It also handles your alts
-
-Rolled up to Ofi on a fresh character and found she has nothing to say? The
-window tells you why, and what is left to do before she will hand over the
-daily. Zone access is warband-wide but campaign progress is not, so this is a
-per-character problem that looks like a bug until someone explains it.
-
-It also spots the other confusing one: the daily is shared across your warband,
-so if another character already mixed today, the window says so instead of
-letting you wonder where the quest went.
-
-### Small things
-
-- Offering names come from the achievement's own criteria, so they arrive in
-  your language without the addon translating anything.
-- The window is draggable, closes with Escape, and remembers where you put it.
-- Ofi's cauldron simmers away behind the table. Purely decorative. Turn it off if
-  you are the sort of person who turns that sort of thing off.
-
-### Commands
-
-- `/mmh` — show or hide the window
-- `/mmh help` — every option, with its current state
-- `/mmh config` — open the settings panel
-- `/mmh reset` — put the window back in the middle of the screen
-
-Everything is a checkbox in Interface Options as well: open at Ofi, close when
-you look away, dim the collected ones, mark a suggested mix, count your bank,
-simmer the cauldron, lock the window.
-
-### With thanks
-
-The table of combinations is **Lazey's** work, from their comment on the
-Mysterious Mix Master page on Wowhead. Working it out first-hand would have cost
-a great many wasted dailies, given that the quest tells you nothing and only
-comes round once a day. This addon would not exist without that comment, and the
-in-game window says so on the cauldron in its title bar.
+The combination table is **Lazey's** work, from their comment on the Wowhead
+achievement page. It would have cost a lot of wasted dailies to work out
+otherwise. Thank you.
 
 ---
 
 ## Description — Français
 
-### Le problème
+### Dix combinaisons. Un essai par jour. Aucun retour.
 
-Chaque jour, Ofi la Sournoise vous réclame trois ingrédients pour son ragoût. Il
-en existe trois sortes, vous les donnez un par un, et rien ne vous empêche de donner
-deux fois le même. Ça fait dix combinaisons, dix offrandes différentes, et le
-haut fait **Maître des mélanges mystérieux** les veut toutes.
+Ofi la Sournoise réclame trois ingrédients pour son ragoût. Trois sortes, données
+une par une, répétitions autorisées — soit dix combinaisons, dix offrandes
+différentes, et le haut fait **Maître des mélanges mystérieux** les veut toutes.
+Elle ne vous souffle rien pendant que vous choisissez, et la quête est
+journalière et partagée par tout le bataillon : une erreur coûte une journée à
+tous vos personnages.
 
-Le meilleur : Ofi ne vous donne aucun retour pendant que vous choisissez. Pas de
-bouillonnement, pas de lueur, pas de « ah, ça c'est du bon ». Juste une boîte de
-dialogue dont quatre mots changent si vous plissez les yeux. Et comme la quête
-est journalière et partagée par tout le bataillon, une erreur vous coûte une
-journée — sur tous vos personnages à la fois.
+Ciblez-la et ceci s'ouvre :
 
-Dix offrandes. Un essai par jour. Et aucun moyen de savoir ce que vous avez déjà
-fait sans ouvrir le panneau des hauts faits et le recouper avec un tableau que
-quelqu'un a eu la bonté de taper sur internet.
+- **Les dix combinaisons**, face à ce que vous avez réellement dans vos sacs
+- **En vert** : réalisable maintenant. **Cochée** : le haut fait l'a déjà.
+- **Une en or** : parmi celles à votre portée aujourd'hui, celle qui laisse le
+  plus des autres accessibles
+- **Le total** que réclament vos combinaisons restantes, pour savoir quoi farmer
+- **Sur un reroll** : ce qu'il reste à faire avant qu'elle propose la journalière
 
-Vous pouvez faire ça. Ou cibler Ofi et lire une fenêtre.
+Les noms viennent des critères du haut fait, donc ils arrivent dans votre langue.
 
-### Ce qu'il fait
+`/mmh` l'ouvre n'importe où. `/mmh help` liste les options.
 
-Ciblez Ofi la Sournoise avec la journalière dans votre journal, et ceci s'ouvre :
-
-- **Dix lignes, une par combinaison**, chacune portant l'icône de l'offrande
-  qu'elle produit, face à trois colonnes de ce que vous avez réellement sur vous.
-- **En vert** : réalisable tout de suite. Seuls les sacs comptent, parce que
-  votre banque n'est pas plantée à côté de vous, et votre bataillon non plus.
-- **Cochée et grisée** : le haut fait l'a déjà. Fini de scruter la liste des
-  critères.
-- **Une ligne en or** : le mélange conseillé. Parmi ceux que vous pouvez faire
-  aujourd'hui, celui qui laisse le plus des autres à votre portée. C'est une
-  suggestion, pas un ordre. C'est vous qui tenez les osselets.
-- **Le pied de page** tient les comptes : offrandes obtenues, mélanges
-  réalisables maintenant, et le total d'ingrédients que réclament encore vos
-  combinaisons restantes. En partant de zéro : dix de chaque, un chiffre bon à
-  connaître avant d'aller courir les trésors.
-
-Survolez n'importe quoi pour en savoir plus : l'infobulle de l'offrande sur une
-ligne, et sur un ingrédient, ce que vous portez, ce que vous avez rangé
-ailleurs, et ce que les mélanges restants vont en réclamer.
-
-### Il s'occupe aussi de vos rerolls
-
-Vous arrivez chez Ofi sur un personnage neuf et il n'a rien à vous dire ? La
-fenêtre explique pourquoi, et ce qu'il reste à faire avant qu'elle propose la
-journalière. L'accès à la zone est acquis pour tout le bataillon, mais la
-progression de campagne non — c'est donc un problème propre à chaque
-personnage, qui ressemble à un bug tant que personne ne l'explique.
-
-Elle repère aussi l'autre cas trompeur : la journalière étant partagée, si un
-autre personnage a déjà fait son mélange aujourd'hui, la fenêtre le dit au lieu
-de vous laisser chercher où est passée la quête.
-
-### Détails
-
-- Les noms des offrandes viennent des critères du haut fait, donc ils arrivent
-  dans votre langue sans que l'addon traduise quoi que ce soit.
-- La fenêtre se déplace à la souris, se ferme avec Échap, et retient sa place.
-- Le chaudron d'Ofi mijote derrière le tableau. Purement décoratif. Désactivable
-  si vous êtes du genre à désactiver ce genre de chose.
-
-### Commandes
-
-- `/mmh` — afficher ou masquer la fenêtre
-- `/mmh help` — toutes les options, avec leur état
-- `/mmh config` — ouvrir le panneau de configuration
-- `/mmh reset` — remettre la fenêtre au centre de l'écran
-
-Tout est aussi une case à cocher dans les options d'interface.
-
-### Remerciements
-
-Le tableau des combinaisons est l'œuvre de **Lazey**, tiré de son commentaire
-sur la page du haut fait « Mysterious Mix Master » de Wowhead. Le reconstituer
-soi-même aurait coûté un grand nombre de journalières gâchées, vu que la quête
-ne dit rien et ne revient qu'une fois par jour. Cet addon n'existerait pas sans
-ce commentaire, et la fenêtre le rappelle sur le chaudron de sa barre de titre.
+Le tableau des combinaisons est l'œuvre de **Lazey**, tiré de son commentaire sur
+la page Wowhead du haut fait. Le reconstituer aurait coûté beaucoup de
+journalières gâchées. Merci.
 
 ---
 
