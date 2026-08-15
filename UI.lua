@@ -173,6 +173,17 @@ local function ShowIngredientTooltip(owner, ingredient)
 		end
 	end
 
+	-- These lines run long, so they are added with wrapping on. That trailing
+	-- `true` is why the colours are spelled out rather than unpacked.
+	GameTooltip:AddLine(" ")
+	GameTooltip:AddLine(L.TT_WHERE, ACCENT[1], ACCENT[2], ACCENT[3])
+	GameTooltip:AddLine(string.format(L.TT_FROM,
+		ns.GetItemName(ns.CONTAINER_ID, ns.CONTAINER_NAME)), 1, 1, 1, true)
+	GameTooltip:AddLine(string.format(L.TT_FROM_CHANCE, ingredient.chance),
+		TEXT_LABEL[1], TEXT_LABEL[2], TEXT_LABEL[3], true)
+	GameTooltip:AddLine(L.TT_TRADABLE,
+		TEXT_LABEL[1], TEXT_LABEL[2], TEXT_LABEL[3], true)
+
 	GameTooltip:Show()
 end
 
@@ -591,12 +602,33 @@ local function BuildChrome()
 	accent:SetPoint("TOPRIGHT", titleBar, "BOTTOMRIGHT")
 	accent:SetHeight(1)
 
-	local badge = frame:CreateTexture(nil, "ARTWORK")
-	badge:SetTexture(ns.ACHIEVEMENT_ICON)
-	badge:SetTexCoord(unpack(ICON_TRIM))
+	-- The achievement's cauldron, and where the credits live: a tooltip costs no
+	-- room in a window that is already a full-height table.
+	local badge = CreateFrame("Frame", nil, frame)
 	badge:SetSize(18, 18)
 	badge:SetPoint("LEFT", frame, "TOPLEFT", PAD, -TITLE_H / 2)
-	Outline(frame, badge, { 1, 1, 1, 0.16 })
+	badge:EnableMouse(true)
+	badge.Icon = badge:CreateTexture(nil, "ARTWORK")
+	badge.Icon:SetTexture(ns.ACHIEVEMENT_ICON)
+	badge.Icon:SetTexCoord(unpack(ICON_TRIM))
+	badge.Icon:SetAllPoints()
+	Outline(badge, badge.Icon, { 1, 1, 1, 0.16 })
+
+	badge:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
+		GameTooltip:AddLine(L.TITLE, 1, 1, 1)
+		GameTooltip:AddLine(string.format(L.ABOUT_VERSION, ns.version),
+			TEXT_LABEL[1], TEXT_LABEL[2], TEXT_LABEL[3])
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine(L.THANKS_TITLE, ACCENT[1], ACCENT[2], ACCENT[3])
+		GameTooltip:AddLine(L.THANKS_BODY, 1, 1, 1, true)
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine(L.ABOUT_HINT,
+			TEXT_DIM[1], TEXT_DIM[2], TEXT_DIM[3], true)
+		GameTooltip:Show()
+	end)
+	badge:SetScript("OnLeave", GameTooltip_Hide)
+	frame.Badge = badge
 
 	frame.TitleText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	frame.TitleText:SetPoint("LEFT", badge, "RIGHT", 8, 0)

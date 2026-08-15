@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.3.0
+
+- Ingredient tooltips now say where to find more: the container they open out
+  of, how often a container holds that particular one, and that they can be
+  bought rather than farmed.
+- Hovering the cauldron on the title bar shows the version and a thank-you to
+  Lazey, whose Wowhead comment is where the table of combinations comes from.
+  `/mmh help` prints the same credit.
+
 ## v1.2.0
 
 - Collected offerings are far easier to pick out: the tick has a column of its

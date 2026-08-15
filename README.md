@@ -45,14 +45,31 @@ client's language without the addon shipping a translation.
 | Eerie | 2 | 1 | |
 | Balanced | 1 | 1 | 1 |
 
-The mapping is from [Lazey's comment][comment] on the achievement page, with the
-criteria ids cross-checked against Wowhead's achievement data.
+## Where the ingredients come from
+
+All three open out of [Handful of Esoteric Ingredients][container], a container
+picked up as treasure around The Coiled Isle. One bag can hold more than one
+kind, so there is no separate place to farm each: roughly 85% of bags hold a
+knucklebone, 74% a feather, 84% a blood-pearl. The ingredients themselves are
+tradable, so the auction house is an option once the daily is unlocked.
+
+A tip doing the rounds has each ingredient dropping near a different sort of mob
+— knucklebones by graveyards, feathers by serpents, pearls along the shore.
+Wowhead's loot data does not bear that out; it is one container for all three.
+
+[container]: https://www.wowhead.com/item=278084/handful-of-esoteric-ingredients
+
+## Credits
+
+The table of combinations is [Lazey's work][comment], from their comment on the
+Mysterious Mix Master page on Wowhead. Working it out first-hand would have cost
+a great many wasted dailies, since the quest gives no feedback while you choose
+and can only be done once a day. Hover the cauldron in the window's title bar to
+see the credit in game.
+
+The offering item ids were cross-checked against Wowhead's own item pages.
 
 [comment]: https://www.wowhead.com/achievement=63432/mysterious-mix-master#comments:id=6389799
-
-Ingredients drop from treasures around The Coiled Isle and are tradable, so the
-auction house is an option: knucklebones near undead and graveyards, feathers
-near serpents and poisonous ground, blood-pearls along the shore.
 
 ## Commands
 

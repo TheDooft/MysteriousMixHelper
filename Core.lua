@@ -356,6 +356,7 @@ local function PrintOptions()
 	end
 	DEFAULT_CHAT_FRAME:AddMessage("  " .. L.SLASH_CONFIG)
 	DEFAULT_CHAT_FRAME:AddMessage("  " .. L.SLASH_RESET)
+	DEFAULT_CHAT_FRAME:AddMessage("|cffffb833" .. L.THANKS_TITLE .. ":|r " .. L.THANKS_BODY)
 end
 
 SLASH_MYSTERIOUSMIXHELPER1 = "/mmh"

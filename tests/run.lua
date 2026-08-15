@@ -219,6 +219,22 @@ do
 	check("reports what is in your bags", has(text, ns.L.TT_IN_BAGS))
 	check("and how much the remaining mixes want", has(text, ns.L.TT_NEEDED))
 	check("and the shortfall", has(text, ns.L.TT_SHORT_BY))
+	check("and where to find more", has(text, ns.L.TT_WHERE))
+	check("naming the container", has(text, ns.CONTAINER_NAME))
+	check("with that ingredient's own drop share",
+		has(text, tostring(ns.ingredients[2].chance) .. "%"))
+	check("and asks the client to cache the container's name",
+		H.requested[ns.CONTAINER_ID] == true)
+end
+
+print("=== credits ===")
+do
+	local badge = ns.window.Badge
+	badge:GetScript("OnEnter")(badge)
+	local text = strip(table.concat(H.tooltip.lines, "\n"))
+	check("the cauldron thanks Lazey", has(text, "Lazey"))
+	check("and points at where the table came from", has(text, "Wowhead"))
+	check("and carries the version", has(text, ns.version))
 end
 
 -- The column headers use the same tooltip, so the two never disagree.

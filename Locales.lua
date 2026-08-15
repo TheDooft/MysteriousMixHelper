@@ -20,6 +20,14 @@ local L = {
 	NO_QUEST         = "Pick up Mixing Mysteries from Ofi to hand in a mix.",
 	CRITERIA_UNKNOWN = "Achievement progress unavailable — open the achievement once to load it.",
 
+	-- Where ingredients come from
+	TT_WHERE         = "Where to find it",
+	-- %s is the container's item name
+	TT_FROM          = "Opens out of %s, found as treasure around The Coiled Isle.",
+	-- %d is the share of containers holding at least one
+	TT_FROM_CHANCE   = "About %d%% of them hold at least one.",
+	TT_TRADABLE      = "Tradable, so the auction house is an option too.",
+
 	-- Ingredient tooltips
 	TT_IN_BAGS       = "In your bags",
 	TT_STORED        = "Stored elsewhere",
@@ -32,6 +40,12 @@ local L = {
 	TT_READY         = "You can make this one right now.",
 	TT_SHORT         = "You are short:",
 	TT_SUGGESTED     = "Suggested today: of the mixes you can make, this one leaves the most of the others still within reach.",
+
+	-- Credits, shown on the title bar's cauldron and printed by /mmh help
+	ABOUT_VERSION    = "version %s",
+	ABOUT_HINT       = "Drag to move.  /mmh for options.",
+	THANKS_TITLE     = "With thanks",
+	THANKS_BODY      = "The table of combinations is Lazey's work, from their comment on the Mysterious Mix Master page on Wowhead. This addon would have taken a great many wasted dailies to work out without it.",
 
 	-- Options
 	OPT_AUTO_SHOW    = "Open at Ofi the Sly",
@@ -80,6 +94,11 @@ local translations = {
 		NO_QUEST         = "Prenez « Mélanges mystérieux » chez Ofi pour rendre un mélange.",
 		CRITERIA_UNKNOWN = "Progression du haut fait indisponible — ouvrez-le une fois pour la charger.",
 
+		TT_WHERE         = "Où en trouver",
+		TT_FROM          = "S'ouvre depuis %s, un trésor à ramasser sur l'Île Lovée.",
+		TT_FROM_CHANCE   = "Environ %d%% d'entre eux en contiennent au moins un.",
+		TT_TRADABLE      = "Échangeable : l'hôtel des ventes est une option.",
+
 		TT_IN_BAGS       = "Dans vos sacs",
 		TT_STORED        = "Rangés ailleurs",
 		TT_NEEDED        = "Réclamés par les mélanges qu'il vous reste",
@@ -90,6 +109,11 @@ local translations = {
 		TT_READY         = "Vous pouvez faire celle-ci tout de suite.",
 		TT_SHORT         = "Il vous manque :",
 		TT_SUGGESTED     = "Conseillé aujourd'hui : parmi les mélanges réalisables, c'est celui qui laisse le plus des autres à votre portée.",
+
+		ABOUT_VERSION    = "version %s",
+		ABOUT_HINT      = "Glissez pour déplacer.  /mmh pour les options.",
+		THANKS_TITLE     = "Remerciements",
+		THANKS_BODY      = "Le tableau des combinaisons est l'œuvre de Lazey, tiré de son commentaire sur la page du haut fait « Mysterious Mix Master » de Wowhead. Sans lui, il aurait fallu gâcher un grand nombre de quêtes journalières pour le reconstituer.",
 
 		OPT_AUTO_SHOW    = "Ouvrir chez Ofi le Malin",
 		OPT_AUTO_SHOW_TT = "Ouvre la fenêtre automatiquement quand vous avez « Mélanges mystérieux » et Ofi le Malin en cible.",

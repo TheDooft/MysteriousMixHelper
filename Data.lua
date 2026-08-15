@@ -22,12 +22,22 @@ local KNUCKLEBONE = 276124
 local FEATHER     = 276126
 local PEARL       = 276117
 
+-- All three ingredients come out of the same container, found as treasure around
+-- The Coiled Isle. One bag can hold more than one kind, so there is no such
+-- thing as "the place knucklebones come from" — `chance` is how often a bag
+-- holds at least one of that ingredient, per Wowhead's loot sample.
+--
+-- (A widely-repeated tip has each ingredient near a different sort of mob. The
+-- loot data does not support it: one bag, three ingredients.)
+ns.CONTAINER_ID   = 278084
+ns.CONTAINER_NAME = "Handful of Esoteric Ingredients"
+
 -- Display order of the three ingredient columns. `name` is the enUS name, used
 -- only until the client has the item cached and can hand back a localised one.
 ns.ingredients = {
-	{ id = KNUCKLEBONE, name = "Ancient Knucklebone",  abbrev = "Bone" },
-	{ id = FEATHER,     name = "Serpent's Feather",    abbrev = "Feather" },
-	{ id = PEARL,       name = "Clouded Blood-Pearl",  abbrev = "Pearl" },
+	{ id = KNUCKLEBONE, name = "Ancient Knucklebone", chance = 85 },
+	{ id = FEATHER,     name = "Serpent's Feather",   chance = 74 },
+	{ id = PEARL,       name = "Clouded Blood-Pearl", chance = 84 },
 }
 
 -- The ten combinations, in the order Lazey's comment lists them, so the window
