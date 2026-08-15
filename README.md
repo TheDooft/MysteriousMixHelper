@@ -89,7 +89,7 @@ screen. Each option can also be toggled by name, e.g. `/mmh autoHide`.
 | Option | Default | What it does |
 |---|---|---|
 | `autoShow` | on | Open automatically at Ofi the Sly. |
-| `autoHide` | on | Close again once he is no longer your target. |
+| `autoHide` | on | Close again once she is no longer your target. |
 | `requireQuest` | on | Only open with Mixing Mysteries actually in your log. |
 | `dimDone` | on | Grey out combinations you have already turned in. |
 | `suggest` | on | Mark a suggested mix. |

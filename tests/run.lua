@@ -524,7 +524,7 @@ H.Fire("BAG_UPDATE_DELAYED")
 check("it stays closed while you are still stood there", not H.window:IsShown())
 H.SetTarget(nil)
 H.SetTarget(OFI)
-check("but comes back next time you target him", H.window:IsShown())
+check("but comes back next time you target her", H.window:IsShown())
 
 print("=== keeping it open away from Ofi ===")
 H.SetTarget(nil)

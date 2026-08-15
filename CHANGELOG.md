@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.9.2
+
+- Ofi the Sly is a woman. The French strings called her "Ofi le Malin", which
+  was both the wrong gender and a name I had made up — the client calls her
+  **Ofi la Sournoise**. Corrected, along with the English pronouns in the
+  documentation.
+
 ## v1.9.1
 
 - Smoothed the bubble falloff: four steps left visible rings on the larger

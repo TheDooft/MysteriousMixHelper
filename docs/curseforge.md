@@ -29,7 +29,7 @@ would duplicate the release and bypass the changelog carving.
 
 ## Summary
 
-> Ofi the Sly wants three ingredients. He will not tell you what they do. This window will.
+> Ofi the Sly wants three ingredients. She will not tell you what they do. This window will.
 
 ---
 
@@ -37,7 +37,7 @@ would duplicate the release and bypass the changelog carving.
 
 ### The problem
 
-Every day, Ofi the Sly asks you for three ingredients for his stew. There are
+Every day, Ofi the Sly asks you for three ingredients for her stew. There are
 three kinds, you hand them over one at a time, and nothing stops you handing over
 the same one twice. That is ten combinations, ten different offerings, and the
 **Mysterious Mix Master** achievement wants every single one of them.
@@ -78,10 +78,10 @@ of it the mixes you have left are going to want.
 
 ### It also handles your alts
 
-Rolled up to Ofi on a fresh character and found he has nothing to say? The window
-tells you why, and what is left to do before he will hand over the daily. Zone
-access is warband-wide but campaign progress is not, so this is a per-character
-problem that looks like a bug until someone explains it.
+Rolled up to Ofi on a fresh character and found she has nothing to say? The
+window tells you why, and what is left to do before she will hand over the
+daily. Zone access is warband-wide but campaign progress is not, so this is a
+per-character problem that looks like a bug until someone explains it.
 
 It also spots the other confusing one: the daily is shared across your warband,
 so if another character already mixed today, the window says so instead of
@@ -120,8 +120,8 @@ in-game window says so on the cauldron in its title bar.
 
 ### Le problème
 
-Chaque jour, Ofi le Malin vous réclame trois ingrédients pour son ragoût. Il en
-existe trois sortes, vous les donnez un par un, et rien ne vous empêche de donner
+Chaque jour, Ofi la Sournoise vous réclame trois ingrédients pour son ragoût. Il
+en existe trois sortes, vous les donnez un par un, et rien ne vous empêche de donner
 deux fois le même. Ça fait dix combinaisons, dix offrandes différentes, et le
 haut fait **Maître des mélanges mystérieux** les veut toutes.
 
@@ -139,7 +139,7 @@ Vous pouvez faire ça. Ou cibler Ofi et lire une fenêtre.
 
 ### Ce qu'il fait
 
-Ciblez Ofi le Malin avec la journalière dans votre journal, et ceci s'ouvre :
+Ciblez Ofi la Sournoise avec la journalière dans votre journal, et ceci s'ouvre :
 
 - **Dix lignes, une par combinaison**, chacune portant l'icône de l'offrande
   qu'elle produit, face à trois colonnes de ce que vous avez réellement sur vous.
@@ -162,7 +162,7 @@ ailleurs, et ce que les mélanges restants vont en réclamer.
 ### Il s'occupe aussi de vos rerolls
 
 Vous arrivez chez Ofi sur un personnage neuf et il n'a rien à vous dire ? La
-fenêtre explique pourquoi, et ce qu'il reste à faire avant qu'il propose la
+fenêtre explique pourquoi, et ce qu'il reste à faire avant qu'elle propose la
 journalière. L'accès à la zone est acquis pour tout le bataillon, mais la
 progression de campagne non — c'est donc un problème propre à chaque
 personnage, qui ressemble à un bug tant que personne ne l'explique.
