@@ -44,7 +44,7 @@ local ICON_TRIM = { 0.07, 0.93, 0.07, 0.93 }
 -- A bubble is a plain white texture tinted green and rounded off by the mask
 -- Blizzard uses on portraits.
 --
--- Both halves matter, and getting either wrong has already cost a round:
+-- Both halves matter, and both have been wrong here before:
 --   * The loading spinner's StreamCircle is an *arc*, not a circle. Invisible
 --     at 13px, but every bubble read as a crescent once they reached 38px.
 --   * SetMask does not apply to a SetColorTexture fill — that combination is

@@ -11,8 +11,8 @@ local _, ns = ...
 --   npc         https://www.wowhead.com/npc=254599/ofi-the-sly
 --   achievement https://www.wowhead.com/achievement=63432/mysterious-mix-master
 --   the mapping from combination to offering is Lazey's comment on the
---   achievement page (#comments:id=6389799), cross-checked against the criteria
---   ids in Wowhead's achievement data.
+--   achievement page (#comments:id=6389799), cross-checked against the offering
+--   items' own pages on Wowhead.
 
 ns.QUEST_ID       = 97016   -- Mixing Mysteries, a daily
 ns.NPC_ID         = 254599  -- Ofi the Sly, Tokka's Landing, The Coiled Isle

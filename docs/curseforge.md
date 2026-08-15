@@ -1,12 +1,13 @@
 # Creating the CurseForge project
 
-Everything the "Create Project" form asks for, ready to paste. Steps 1–3 of the
-CurseForge wiring in `README.md`; come back here for the text.
+The project page's own text, kept here so it can be edited in the repository
+rather than only in a web form. `README.md` describes how the repository is
+wired to CurseForge; this file is the wording.
 
-The description is written in English because that is what the CurseForge page
-is read in. A French version follows it — the addon ships frFR strings, so it is
-worth pasting underneath the English one on the same page rather than leaving
-French players to guess.
+The description is in English because that is what the page is read in. A French
+version follows it — the addon ships frFR strings, so it is worth pasting
+underneath the English one on the same page rather than leaving French players
+to guess.
 
 Both are deliberately short. A longer version that walked through every feature
 is in the history at commit `cb3864b` if the page ever needs filling out.

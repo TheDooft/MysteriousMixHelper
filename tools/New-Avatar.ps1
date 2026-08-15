@@ -7,23 +7,30 @@
     panel background, a few of its green bubbles, and the cauldron icon crisp on
     top over a soft blown-up copy of itself.
 
-    Pure System.Drawing, because this machine has neither ImageMagick nor
-    ffmpeg. The TGA is decoded by tools/Convert-Tga.ps1 in C:\dev\Claude-PC.
+    Composition is pure System.Drawing, so nothing needs installing.
+
+    Give it the icon in any format System.Drawing reads (PNG, JPG, BMP). The
+    game ships icons as TGA, which System.Drawing does not read, so a .tga input
+    is handed to a converter script first — pass -Converter to point at one.
+    Any TGA-to-PNG tool will do; the default is where the author's lives, and it
+    is not part of this repository.
 
 .EXAMPLE
-    .\New-Avatar.ps1
-    Reads the icon from the default client path and writes docs/avatar-400.png.
+    .\New-Avatar.ps1 -Icon .\cauldron.png
+    Composes from an already-decoded icon and writes docs/avatar-400.png.
 
 .EXAMPLE
     .\New-Avatar.ps1 -Icon 'D:\...\INV_Misc_Cauldron_Arcane.tga' -OutFile out.png
 #>
 [CmdletBinding()]
 param(
+    # The achievement's icon, inv_misc_cauldron_arcane. The default is the
+    # author's client install; give your own path.
     [string] $Icon = 'D:\World of Warcraft\_retail_\Interface\ICONS\INV_Misc_Cauldron_Arcane.tga',
 
     [string] $OutFile,
 
-    # Converts the TGA on the way in. Only needed if the helper has moved.
+    # Only consulted for a .tga input. Not shipped with this addon.
     [string] $Converter = 'C:\dev\Claude-PC\tools\Convert-Tga.ps1',
 
     [int] $Size = 400
@@ -55,11 +62,20 @@ $bubbles = @(
 
 # --- Decode the icon --------------------------------------------------------
 
-$temp = Join-Path ([System.IO.Path]::GetTempPath()) ("mmh-icon-{0}.png" -f [guid]::NewGuid())
-& $Converter $Icon -OutFile $temp | Out-Null
-if (-not (Test-Path $temp)) { throw "The converter produced no file. Is '$Converter' still there?" }
+if (-not (Test-Path $Icon)) { throw "No icon at '$Icon'. Pass -Icon with your own path." }
 
-$source = [System.Drawing.Image]::FromFile($temp)
+$temp = $null
+if ([System.IO.Path]::GetExtension($Icon) -eq '.tga') {
+    if (-not (Test-Path $Converter)) {
+        throw "'$Icon' is a TGA and System.Drawing cannot read one. Convert it to PNG with any tool and pass that instead, or point -Converter at a TGA decoder. The default path is the author's own and is not part of this repository."
+    }
+    $temp = Join-Path ([System.IO.Path]::GetTempPath()) ("mmh-icon-{0}.png" -f [guid]::NewGuid())
+    & $Converter $Icon -OutFile $temp | Out-Null
+    if (-not (Test-Path $temp)) { throw "'$Converter' produced no file." }
+    $Icon = $temp
+}
+
+$source = [System.Drawing.Image]::FromFile($Icon)
 $canvas = New-Object System.Drawing.Bitmap($Size, $Size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
 
 try {
@@ -125,5 +141,5 @@ try {
 } finally {
     $canvas.Dispose()
     $source.Dispose()
-    Remove-Item $temp -ErrorAction SilentlyContinue
+    if ($temp) { Remove-Item $temp -ErrorAction SilentlyContinue }
 }
