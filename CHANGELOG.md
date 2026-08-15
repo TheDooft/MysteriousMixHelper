@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.8.1
+
+- The bubbles drew as squares: `SetMask` has no effect on a `SetColorTexture`
+  fill. They are now a plain white texture file tinted green with the mask set
+  first, which is the pairing the game itself uses to round off an icon.
+
 ## v1.8.0
 
 - The bubbles are round again. They were drawn with the loading spinner's

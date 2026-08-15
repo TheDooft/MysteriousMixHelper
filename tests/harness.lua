@@ -118,7 +118,12 @@ local function Region()
 	function region:SetColorTexture() end
 	function region:SetDesaturated(value) self.desaturated = value and true or false end
 	function region:SetBlendMode(mode) self.blend = mode end
-	function region:SetMask(path) self.mask = path end
+	-- Recorded in call order: the mask has to be set before the texture, or the
+	-- game rewrites the texture coordinates out from under it.
+	function region:SetMask(path)
+		self.mask = path
+		self.maskedBeforeTexture = self.texture == nil
+	end
 	function region:SetVertexColor() end
 	function region:SetAlpha(value) self.alpha = value end
 	function region:GetAlpha() return self.alpha or 1 end

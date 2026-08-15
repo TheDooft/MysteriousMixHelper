@@ -307,8 +307,17 @@ check("back to the daily note when on the quest", has(H.footer.Note:GetText(), n
 print("=== the simmering cauldron ===")
 do
 	check("there are bubbles", #ns.bubbles == ns.BUBBLE_COUNT and ns.BUBBLE_COUNT > 0)
-	check("each is a fill rounded off by a mask, not a round texture file",
-		ns.bubbles[1].texture.mask ~= nil and ns.bubbles[1].texture.blend == "ADD")
+	-- Getting this pairing wrong has cost two rounds: an arc texture drew
+	-- crescents, and a mask over a colour fill drew squares. It has to be a
+	-- real texture file with the mask set first.
+	do
+		local texture = ns.bubbles[1].texture
+		check("each is a real texture file, not a colour fill",
+			type(texture:GetTexture()) == "string")
+		check("rounded off by a mask", texture.mask ~= nil)
+		check("with the mask set first", texture.maskedBeforeTexture == true)
+		check("and blended additively", texture.blend == "ADD")
+	end
 	check("they are scattered on the first fill, not all at the bottom",
 		ns.bubbles[1].y ~= ns.bubbles[2].y or ns.bubbles[2].y ~= ns.bubbles[3].y)
 

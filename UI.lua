@@ -41,17 +41,20 @@ local ICON_TRIM = { 0.07, 0.93, 0.07, 0.93 }
 -- swaying, tinted green and blended additively. Faint on purpose — this sits
 -- under ten rows of text it must never compete with.
 --
--- A bubble is a solid colour fill rounded off by the circular mask Blizzard
--- uses on portraits — the same pairing it uses to round an arbitrary icon.
--- Built this way rather than from a round texture file on purpose: a mask
--- texture used directly can carry black in its colour channels, which under
--- additive blending would come out as nothing at all. If the mask ever failed
--- here the worst case is soft squares, which is a visible flaw rather than an
--- invisible one.
+-- A bubble is a plain white texture tinted green and rounded off by the mask
+-- Blizzard uses on portraits.
 --
--- An earlier pass used the loading spinner's StreamCircle. That is an *arc*,
--- and once the bubbles grew past about 20px every one read as a crescent.
-local BUBBLE_MASK = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
+-- Both halves matter, and getting either wrong has already cost a round:
+--   * The loading spinner's StreamCircle is an *arc*, not a circle. Invisible
+--     at 13px, but every bubble read as a crescent once they reached 38px.
+--   * SetMask does not apply to a SetColorTexture fill — that combination is
+--     not one the game ships anywhere, and it drew squares.
+-- So this follows the pairing Blizzard actually uses to round an arbitrary
+-- icon (Blizzard_ArtifactPerks, Blizzard_EncounterJournal): set the mask, then
+-- set a real texture file under it. ChatFrameBackground is that file — flat
+-- white, so a vertex colour is the only tint in play.
+local BUBBLE_MASK    = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
+local BUBBLE_TEXTURE = "Interface\\ChatFrame\\ChatFrameBackground"
 local BUBBLE_COLOR   = { 0.46, 1.00, 0.62 }
 local BUBBLE_COUNT   = 16
 local BUBBLE_ALPHA   = { 0.12, 0.30 }
@@ -226,8 +229,11 @@ local function CreateBubbles(parent)
 		-- Sub-level 2 puts them over the panel background; the rows are child
 		-- frames, so text and icons stay in front without any further ordering.
 		local texture = parent:CreateTexture(nil, "BACKGROUND", nil, 2)
-		texture:SetColorTexture(BUBBLE_COLOR[1], BUBBLE_COLOR[2], BUBBLE_COLOR[3], 1)
+		-- Mask before texture: a mask rewrites the texture coordinates, so
+		-- Blizzard's own code always sets it first.
 		texture:SetMask(BUBBLE_MASK)
+		texture:SetTexture(BUBBLE_TEXTURE)
+		texture:SetVertexColor(unpack(BUBBLE_COLOR))
 		texture:SetBlendMode("ADD")
 		list[index] = { texture = texture }
 	end
