@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.1.0
+
+- Each combination now shows the icon of the offering it produces, with the
+  collected tick riding on the corner of that icon.
+- Reworked the window's look: flat dark panel, accent title bar, zebra rows,
+  hover highlight, a status bar down the left edge of each row and a progress
+  bar along the bottom.
+- Hovering a row now shows the offering's own item tooltip above the ingredient
+  breakdown.
+- Fixed how achievement progress is matched. Each criterion is keyed by the
+  offering's item id, which is what the criterion carries as its asset — the
+  previous code treated those numbers as criteria ids, which would have left a
+  non-English client reporting progress as unavailable.
+
 ## v1.0.0
 
 - First release.

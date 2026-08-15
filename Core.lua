@@ -52,13 +52,22 @@ function ns.GetItemName(itemID, fallback)
 	return fallback or tostring(itemID)
 end
 
--- The item's icon as a texture escape, or an empty string while it is uncached.
--- The window's header is icons and nothing else, so ask for the data when it is
--- missing rather than waiting for something else to happen to want it.
-function ns.GetItemIcon(itemID, size)
+-- The item's icon as a file id, asking the client for it when it has none yet.
+-- Several places in the window are icon and nothing else, so it is worth the
+-- request rather than waiting for something else to happen to want the item.
+function ns.GetItemIconFile(itemID)
 	local icon = C_Item.GetItemIconByID(itemID)
 	if not icon then
 		C_Item.RequestLoadItemDataByID(itemID)
+		return nil
+	end
+	return icon
+end
+
+-- The same icon as a texture escape, for use inside a line of text.
+function ns.GetItemIcon(itemID, size)
+	local icon = ns.GetItemIconFile(itemID)
+	if not icon then
 		return ""
 	end
 	return string.format("|T%d:%d:%d:0:0|t ", icon, size or 14, size or 14)
@@ -79,51 +88,59 @@ local function StoredCount(itemID)
 	return C_Item.GetItemCount(itemID, true, false, true, true) or 0
 end
 
--- Criteria state keyed by criteria id: { completed = bool, name = <localised> }.
+-- Achievement progress keyed by offering item id:
+-- { completed = bool, name = <localised> }.
 --
 -- The criteria text is the offering's own name in the player's language, so it
 -- doubles as the translation the addon would otherwise have to ship.
 --
--- Matching is on criteria id, which is stable across locales. Should those ever
--- stop lining up — a rebuilt achievement, say — it falls back to matching the
--- criteria text against the enUS names in Data.lua. If neither works the result
--- is nil, and the window says so rather than drawing ten unfinished rows.
+-- Each criterion is "loot this offering", so the number it carries as its asset
+-- is the offering's item id — the one Data.lua lists. That is the match that
+-- should work, and it holds in every locale. Criteria ids and then the enUS
+-- criteria text are tried after it, so a reworked achievement degrades to
+-- something partly useful instead of reporting all ten as unfinished. When no
+-- strategy accounts for all ten the result is nil, and the window says so
+-- rather than guessing.
 function ns.GetCriteriaState()
 	local total = GetAchievementNumCriteria(ns.ACHIEVEMENT_ID)
 	if not total or total == 0 then
 		return nil
 	end
 
-	local byID, byName, matchedID = {}, {}, false
+	local byAsset, byCriteria, byName = {}, {}, {}
 	for index = 1, total do
-		local criteriaString, _, completed, _, _, _, _, _, _, criteriaID =
+		local criteriaString, _, completed, _, _, _, _, assetID, _, criteriaID =
 			GetAchievementCriteriaInfo(ns.ACHIEVEMENT_ID, index)
 		local entry = { completed = completed and true or false, name = criteriaString }
+		if assetID and assetID ~= 0 then
+			byAsset[assetID] = entry
+		end
 		if criteriaID then
-			byID[criteriaID] = entry
+			byCriteria[criteriaID] = entry
 		end
 		if criteriaString then
 			byName[criteriaString] = entry
 		end
 	end
 
-	for _, combination in ipairs(ns.combinations) do
-		if byID[combination.criteriaID] then
-			matchedID = true
-			break
+	for _, lookup in ipairs({ byAsset, byCriteria, byName }) do
+		local state, complete = {}, true
+		for _, combination in ipairs(ns.combinations) do
+			-- Only one of these keys can hit: the first two tables are numeric,
+			-- the last one is keyed by text.
+			local entry = lookup[combination.itemID] or lookup[combination.name]
+			if not entry then
+				complete = false
+				break
+			end
+			state[combination.itemID] = entry
+		end
+		if complete then
+			return state
 		end
 	end
 
-	local state = {}
-	for _, combination in ipairs(ns.combinations) do
-		local entry = matchedID and byID[combination.criteriaID] or byName[combination.name]
-		if not entry then
-			return nil
-		end
-		state[combination.criteriaID] = entry
-	end
-
-	return state
+	return nil
 end
 
 -- The npc id behind a unit, or nil for anything that is not a creature. Unit
@@ -224,7 +241,7 @@ function ns.BuildState()
 	end
 
 	for index, combination in ipairs(ns.combinations) do
-		local entry = criteria and criteria[combination.criteriaID]
+		local entry = criteria and criteria[combination.itemID]
 		local row = {
 			index       = index,
 			combination = combination,

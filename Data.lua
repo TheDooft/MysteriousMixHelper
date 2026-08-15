@@ -33,20 +33,23 @@ ns.ingredients = {
 -- The ten combinations, in the order Lazey's comment lists them, so the window
 -- reads the same way as the guide most players will have come from.
 --
--- `criteriaID` is what ties a row to the achievement. It is stable across
--- locales, unlike the criteria text; Core.lua falls back to matching on the
--- name only if none of these ids turn up in the client's criteria list.
+-- `itemID` is the offering item the mix produces. Each achievement criterion is
+-- "loot this item", so the item id is what the criterion carries as its asset —
+-- which is how Core.lua ties a row to the player's progress, and where the row
+-- icon comes from. Stable across locales, unlike the criteria text.
 ns.combinations = {
-	{ criteriaID = 277946, name = "Choleric Offering",    counts = { [PEARL] = 3 } },
-	{ criteriaID = 277938, name = "Virulent Offering",    counts = { [FEATHER] = 1, [PEARL] = 2 } },
-	{ criteriaID = 277939, name = "Volatile Offering",    counts = { [KNUCKLEBONE] = 1, [PEARL] = 2 } },
-	{ criteriaID = 277944, name = "Phlegmatic Offering",  counts = { [FEATHER] = 3 } },
-	{ criteriaID = 277942, name = "Odious Offering",      counts = { [FEATHER] = 2, [PEARL] = 1 } },
-	{ criteriaID = 277943, name = "Pestilent Offering",   counts = { [KNUCKLEBONE] = 1, [FEATHER] = 2 } },
-	{ criteriaID = 277945, name = "Melancholic Offering", counts = { [KNUCKLEBONE] = 3 } },
-	{ criteriaID = 277940, name = "Fragile Offering",     counts = { [KNUCKLEBONE] = 2, [PEARL] = 1 } },
-	{ criteriaID = 277941, name = "Eerie Offering",       counts = { [KNUCKLEBONE] = 2, [FEATHER] = 1 } },
-	{ criteriaID = 277937, name = "Balanced Offering",    counts = { [KNUCKLEBONE] = 1, [FEATHER] = 1, [PEARL] = 1 } },
+	{ itemID = 277946, name = "Choleric Offering",    counts = { [PEARL] = 3 } },
+	{ itemID = 277938, name = "Virulent Offering",    counts = { [FEATHER] = 1, [PEARL] = 2 } },
+	{ itemID = 277939, name = "Volatile Offering",    counts = { [KNUCKLEBONE] = 1, [PEARL] = 2 } },
+	{ itemID = 277944, name = "Phlegmatic Offering",  counts = { [FEATHER] = 3 } },
+	{ itemID = 277942, name = "Odious Offering",      counts = { [FEATHER] = 2, [PEARL] = 1 } },
+	{ itemID = 277943, name = "Pestilent Offering",   counts = { [KNUCKLEBONE] = 1, [FEATHER] = 2 } },
+	{ itemID = 277945, name = "Melancholic Offering", counts = { [KNUCKLEBONE] = 3 } },
+	{ itemID = 277940, name = "Fragile Offering",     counts = { [KNUCKLEBONE] = 2, [PEARL] = 1 } },
+	{ itemID = 277941, name = "Eerie Offering",       counts = { [KNUCKLEBONE] = 2, [FEATHER] = 1 } },
+	{ itemID = 277937, name = "Balanced Offering",    counts = { [KNUCKLEBONE] = 1, [FEATHER] = 1, [PEARL] = 1 } },
 }
+
+ns.ACHIEVEMENT_ICON = "Interface\\Icons\\inv_misc_cauldron_arcane"
 
 ns.INGREDIENTS_PER_MIX = 3

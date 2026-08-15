@@ -27,15 +27,25 @@ local function SetBags(bone, feather, pearl)
 	H.Fire("BAG_UPDATE_DELAYED")
 end
 
+-- A cell holds either a number or a faint placeholder; only the number matters.
+local function Cell(text) return (strip(text):match("%d+")) or "" end
+
 local function Render()
 	local out = {}
 	for index, row in ipairs(H.Rows()) do
 		out[index] = {
 			name = row.name,
-			counts = { strip(row.counts[1]), strip(row.counts[2]), strip(row.counts[3]) },
-			raw = { row.counts[1], row.counts[2], row.counts[3] },
+			counts = { Cell(row.counts[1]), Cell(row.counts[2]), Cell(row.counts[3]) },
+			-- A cell the player cannot cover is coloured; a plain one is not.
+			short = {
+				row.counts[1]:find("|cff") ~= nil,
+				row.counts[2]:find("|cff") ~= nil,
+				row.counts[3]:find("|cff") ~= nil,
+			},
 			done = row.check,
 			suggested = row.highlight,
+			accent = row.accent,
+			icon = row.icon,
 		}
 	end
 	return out
@@ -70,8 +80,8 @@ end
 do
 	local ids = {}
 	for _, combination in ipairs(ns.combinations) do
-		check("criteria id " .. combination.criteriaID .. " is unique", not ids[combination.criteriaID])
-		ids[combination.criteriaID] = true
+		check("offering item " .. combination.itemID .. " is unique", not ids[combination.itemID])
+		ids[combination.itemID] = true
 	end
 end
 
@@ -111,11 +121,25 @@ check("Balanced is one of each", table.concat(rows[BALANCED].counts, "/") == "1/
 check("Eerie is two bones and a feather", table.concat(rows[EERIE].counts, "/") == "2/1/")
 check("Melancholic is three bones", table.concat(rows[MELANCHOLIC].counts, "/") == "3//")
 
+print("=== offering icons ===")
+check("each row wears its own offering's icon",
+	rows[CHOLERIC].icon == 100000 + ns.combinations[CHOLERIC].itemID
+		and rows[BALANCED].icon == 100000 + ns.combinations[BALANCED].itemID)
+do
+	local distinct = {}
+	for _, row in ipairs(rows) do distinct[row.icon] = true end
+	local count = 0
+	for _ in pairs(distinct) do count = count + 1 end
+	check("ten different icons", count == 10)
+end
+
 print("=== what you can afford ===")
 SetBags(0, 0, 3)
 rows = Render()
-check("three pearls buys Choleric", not has(H.Rows()[CHOLERIC].counts[3], "|cffff4040"))
-check("and nothing else", has(H.Rows()[BALANCED].counts[1], "|cffff4040"))
+check("three pearls buys Choleric", not rows[CHOLERIC].short[3])
+check("and nothing else", rows[BALANCED].short[1])
+check("an affordable row is flagged", rows[CHOLERIC].accent)
+check("an unaffordable one is not", not rows[BALANCED].accent)
 local state = ns.BuildState()
 check("one affordable", state.affordable == 1)
 check("Volatile is short a bone", state.rows[VOLATILE].missing[KNUCKLEBONE] == 1)
@@ -153,9 +177,19 @@ check("progress line counts them", has(H.footer.Progress:GetText(), "2 of 10"))
 -- Ten pearls across all ten mixes, less the three Choleric and one Balanced took.
 check("the eight left want 6 pearls", state.stillNeed[PEARL] == 6)
 
--- The client hands criteria out in its own order; the addon must key on the
--- criteria id rather than trust the index.
-check("matched by id, not by position", ns.BuildState().rows[CHOLERIC].done == true)
+-- The client hands criteria out in its own order, and the number that identifies
+-- one is the offering item it asks you to loot, not the criterion's own id. Both
+-- are wrong in the harness on purpose, so this only passes on the asset.
+check("matched by asset, not by position", ns.BuildState().rows[CHOLERIC].done == true)
+check("collected rows are dimmed", Render()[CHOLERIC].done and H.Rows()[CHOLERIC].dimmed)
+
+print("=== when the criteria carry no asset ===")
+H.SetCriteria({ "Choleric Offering" }, { noAsset = true })
+H.Fire("CRITERIA_UPDATE")
+state = ns.BuildState()
+check("it falls back to the criteria text", state.known == true and state.rows[CHOLERIC].done == true)
+H.SetCriteria({ "Choleric Offering", "Balanced Offering" })
+H.Fire("CRITERIA_UPDATE")
 
 print("=== the criteria text supplies the localised name ===")
 do
@@ -242,7 +276,9 @@ do
 	local row = H.Rows()[PHLEGMATIC].frame
 	row:GetScript("OnEnter")(row)
 	local text = strip(table.concat(H.tooltip.lines, "\n"))
-	check("names the offering", has(text, "Phlegmatic Offering"))
+	-- The offering's own item tooltip leads, so the name, quality and flavour
+	-- text come from the game rather than being reprinted here.
+	check("leads with the offering item", has(text, "item:" .. ns.combinations[PHLEGMATIC].itemID))
 	check("lists the requirement", has(text, "Serpent's Feather | 3x"))
 	check("says what is missing", has(text, ns.L.TT_SHORT))
 

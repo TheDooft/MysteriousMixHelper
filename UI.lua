@@ -2,39 +2,65 @@ local addonName, ns = ...
 local L = ns.L
 
 --------------------------------------------------------------------------------
+-- Look
+--------------------------------------------------------------------------------
+
+-- A flat dark panel drawn out of plain colour textures rather than one of the
+-- carved Blizzard frame templates: nothing to tile or scale wrong, and it sits
+-- better next to the current UI.
+local PANEL_BG    = { 0.043, 0.047, 0.059, 0.95 }
+local PANEL_EDGE  = { 1, 1, 1, 0.10 }
+local TITLE_BG    = { 0.078, 0.086, 0.106, 1 }
+local ACCENT      = { 1.00, 0.72, 0.20 }
+local ZEBRA       = { 1, 1, 1, 0.022 }
+local HOVER       = { 1, 1, 1, 0.055 }
+local SUGGEST_BG  = { 1.00, 0.72, 0.20, 0.09 }
+
+local TEXT_BRIGHT = { 0.96, 0.96, 0.97 }
+local TEXT_DIM    = { 0.44, 0.45, 0.50 }
+local TEXT_LABEL  = { 0.55, 0.57, 0.64 }
+local READY       = { 0.42, 0.90, 0.48 }
+local DONE        = { 0.42, 0.44, 0.48 }
+local SHORT       = { 0.93, 0.34, 0.34 }
+
+local MISSING_HEX = "|cffee5555"
+
+-- Icons carry a baked-in border; trimming the outer few percent leaves a clean
+-- square that suits a flat panel.
+local ICON_TRIM = { 0.07, 0.93, 0.07, 0.93 }
+
+--------------------------------------------------------------------------------
 -- Layout
 --------------------------------------------------------------------------------
 
-local WIDTH   = 420
-local PAD     = 16
-local ROW_W   = WIDTH - PAD * 2
-local ROW_H   = 20
-local COL_W   = 60
-local COUNT   = #ns.ingredients
+local WIDTH    = 460
+local PAD      = 14
+local ROW_W    = WIDTH - PAD * 2
+local ROW_H    = 24
+local COL_W    = 62
+local ICON     = 18
+local COUNT    = #ns.ingredients
 
 -- Centre of each ingredient column, measured from the left edge of a row. The
--- columns are pinned to the right so the offering names get whatever is left.
+-- columns are pinned right so the offering names get whatever is left.
 local COL_X = {}
 for index = 1, COUNT do
 	COL_X[index] = ROW_W - (COUNT - index + 1) * COL_W + COL_W / 2
 end
-local NAME_W = COL_X[1] - COL_W / 2 - 24
+local NAME_X = ICON + 8
+local NAME_W = COL_X[1] - COL_W / 2 - NAME_X - 8
 
-local HEADER_Y   = 36
-local STORED_Y   = 52
-local RULE_Y     = 64
-local ROWS_TOP   = 72
-local RULE2_Y    = ROWS_TOP + #ns.combinations * ROW_H + 6
-local PROGRESS_Y = RULE2_Y + 10
-local NEED_Y     = PROGRESS_Y + 18
-local NOTE_Y     = NEED_Y + 18
-local HEIGHT     = NOTE_Y + 22
-
-local DONE_COLOR   = { 0.50, 0.50, 0.50 }
-local READY_COLOR  = { 0.30, 0.95, 0.35 }
-local SHORT_COLOR  = { 0.85, 0.85, 0.85 }
-local MISSING_HEX  = "|cffff4040"
-local STORED_HEX   = "|cff8a8a8a"
+local TITLE_H  = 32
+local LABEL_Y  = TITLE_H + 12
+local CHIP_Y   = LABEL_Y + 16
+local STORED_Y = CHIP_Y + 26
+local RULE_Y   = STORED_Y + 16
+local ROWS_TOP = RULE_Y + 6
+local RULE2_Y  = ROWS_TOP + #ns.combinations * ROW_H + 6
+local PROG_Y   = RULE2_Y + 10
+local NEED_Y   = PROG_Y + 20
+local NOTE_Y   = NEED_Y + 20
+local HEIGHT   = NOTE_Y + 22
 
 local frame, rows, headers, footer
 local programmaticHide, manualOpen, suppressed = false, false, false
@@ -43,42 +69,83 @@ local programmaticHide, manualOpen, suppressed = false, false, false
 -- Small builders
 --------------------------------------------------------------------------------
 
-local function Rule(parent, offsetY)
-	local rule = parent:CreateTexture(nil, "ARTWORK")
-	rule:SetColorTexture(1, 1, 1, 0.12)
+local function Fill(parent, layer, color)
+	local texture = parent:CreateTexture(nil, layer or "BACKGROUND")
+	texture:SetColorTexture(color[1], color[2], color[3], color[4] or 1)
+	return texture
+end
+
+local function Rule(parent, offsetY, color)
+	local rule = Fill(parent, "ARTWORK", color or PANEL_EDGE)
 	rule:SetHeight(1)
 	rule:SetPoint("TOPLEFT", parent, "TOPLEFT", PAD, -offsetY)
 	rule:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PAD, -offsetY)
 	return rule
 end
 
-local function Label(parent, template, point, x, y, width, justify)
-	local text = parent:CreateFontString(nil, "ARTWORK", template)
-	text:SetPoint(point, parent, "TOPLEFT", x, -y)
+local function Text(parent, template, x, y, width, justify, color)
+	local text = parent:CreateFontString(nil, "OVERLAY", template)
+	text:SetPoint("TOPLEFT", parent, "TOPLEFT", x, -y)
 	if width then
 		text:SetWidth(width)
 	end
 	text:SetJustifyH(justify or "LEFT")
+	if color then
+		text:SetTextColor(color[1], color[2], color[3])
+	end
 	return text
 end
 
--- One ingredient's stock, sitting above the column of requirements that uses it.
+local function ItemIcon(parent, size, layer)
+	local icon = parent:CreateTexture(nil, layer or "ARTWORK")
+	icon:SetSize(size, size)
+	icon:SetTexCoord(unpack(ICON_TRIM))
+	return icon
+end
+
+-- A 1px outline, drawn as four thin strips so it stays crisp at any UI scale.
+-- `spread` is how far outside the anchor the strips sit: 1 hugs an icon from the
+-- outside, 0 keeps them flush, which is what the panel edge wants so the border
+-- does not hang off the frame.
+local function Outline(parent, anchor, color, layer, spread)
+	spread = spread or 1
+	local strips = {}
+	for index, edge in ipairs({
+		{ "TOPLEFT", "TOPRIGHT", 0, 1, true },
+		{ "BOTTOMLEFT", "BOTTOMRIGHT", 0, -1, true },
+		{ "TOPLEFT", "BOTTOMLEFT", -1, 0, false },
+		{ "TOPRIGHT", "BOTTOMRIGHT", 1, 0, false },
+	}) do
+		local strip = Fill(parent, layer or "BORDER", color)
+		strip:SetPoint(edge[1], anchor, edge[1], edge[3] * spread, edge[4] * spread)
+		strip:SetPoint(edge[2], anchor, edge[2], edge[3] * spread, edge[4] * spread)
+		if edge[5] then strip:SetHeight(1) else strip:SetWidth(1) end
+		strips[index] = strip
+	end
+	return strips
+end
+
+--------------------------------------------------------------------------------
+-- Header: one cell per ingredient, sitting above the column that spends it
+--------------------------------------------------------------------------------
+
 local function CreateHeaderCell(parent, index)
 	local ingredient = ns.ingredients[index]
 
 	local cell = CreateFrame("Frame", nil, parent)
-	cell:SetSize(COL_W, 30)
-	cell:SetPoint("TOP", parent, "TOPLEFT", PAD + COL_X[index], -(HEADER_Y - 4))
+	cell:SetSize(COL_W, 24)
+	cell:SetPoint("TOP", parent, "TOPLEFT", PAD + COL_X[index], -CHIP_Y)
 
-	cell.Count = cell:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-	cell.Count:SetPoint("TOP")
-	cell.Count:SetWidth(COL_W)
-	cell.Count:SetJustifyH("CENTER")
+	-- Icon and count side by side, centred together in the column.
+	cell.Icon = ItemIcon(cell, 20)
+	cell.Icon:SetPoint("LEFT", cell, "CENTER", -22, 0)
+	Outline(cell, cell.Icon, { 1, 1, 1, 0.14 })
 
-	cell.Stored = parent:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-	cell.Stored:SetPoint("TOP", parent, "TOPLEFT", PAD + COL_X[index], -STORED_Y)
-	cell.Stored:SetWidth(COL_W)
-	cell.Stored:SetJustifyH("CENTER")
+	cell.Count = cell:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+	cell.Count:SetPoint("LEFT", cell.Icon, "RIGHT", 6, 0)
+
+	cell.Stored = Text(parent, "GameFontDisableSmall",
+		PAD + COL_X[index] - COL_W / 2, STORED_Y, COL_W, "CENTER", TEXT_DIM)
 
 	cell:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -90,6 +157,10 @@ local function CreateHeaderCell(parent, index)
 	return cell
 end
 
+--------------------------------------------------------------------------------
+-- Rows
+--------------------------------------------------------------------------------
+
 local function ShowRowTooltip(self)
 	local row = self.state
 	if not row then
@@ -97,8 +168,9 @@ local function ShowRowTooltip(self)
 	end
 
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-	GameTooltip:AddLine(row.displayName, 1, 1, 1)
-	GameTooltip:AddLine(L.TT_REQUIRES, 0.7, 0.7, 0.7)
+	GameTooltip:SetItemByID(row.combination.itemID)
+	GameTooltip:AddLine(" ")
+	GameTooltip:AddLine(L.TT_REQUIRES, unpack(TEXT_LABEL))
 	for _, ingredient in ipairs(ns.ingredients) do
 		local need = row.combination.counts[ingredient.id]
 		if need then
@@ -108,24 +180,22 @@ local function ShowRowTooltip(self)
 		end
 	end
 
+	GameTooltip:AddLine(" ")
 	if row.done then
-		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(L.TT_DONE, unpack(DONE_COLOR))
+		GameTooltip:AddLine(L.TT_DONE, unpack(DONE))
 	elseif row.affordable then
-		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(L.TT_READY, unpack(READY_COLOR))
+		GameTooltip:AddLine(L.TT_READY, unpack(READY))
 		if self.suggested then
-			GameTooltip:AddLine(L.TT_SUGGESTED, 1, 0.82, 0, true)
+			GameTooltip:AddLine(L.TT_SUGGESTED, ACCENT[1], ACCENT[2], ACCENT[3], true)
 		end
 	else
-		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(L.TT_SHORT, 1, 0.3, 0.3)
+		GameTooltip:AddLine(L.TT_SHORT, unpack(SHORT))
 		for _, ingredient in ipairs(ns.ingredients) do
 			local short = row.missing[ingredient.id]
 			if short then
 				GameTooltip:AddDoubleLine(
 					ns.GetItemIcon(ingredient.id) .. ns.GetItemName(ingredient.id, ingredient.name),
-					short .. "x", 1, 0.3, 0.3, 1, 0.3, 0.3)
+					short .. "x", SHORT[1], SHORT[2], SHORT[3], SHORT[1], SHORT[2], SHORT[3])
 			end
 		end
 	end
@@ -139,34 +209,62 @@ local function CreateRow(parent, index)
 	row:SetPoint("TOPLEFT", parent, "TOPLEFT", PAD, -(ROWS_TOP + (index - 1) * ROW_H))
 	row:EnableMouse(true)
 
-	row.Highlight = row:CreateTexture(nil, "BACKGROUND")
+	-- Every other row gets a whisper of light, so the eye can track across to
+	-- the number columns without a heavy grid.
+	if index % 2 == 0 then
+		local zebra = Fill(row, "BACKGROUND", ZEBRA)
+		zebra:SetAllPoints()
+	end
+
+	row.Highlight = Fill(row, "BACKGROUND", SUGGEST_BG)
 	row.Highlight:SetAllPoints()
-	row.Highlight:SetColorTexture(1, 0.82, 0, 0.10)
 	row.Highlight:Hide()
 
-	row.Check = row:CreateTexture(nil, "ARTWORK")
+	row.Hover = Fill(row, "BACKGROUND", HOVER)
+	row.Hover:SetAllPoints()
+	row.Hover:Hide()
+
+	-- A short bar at the left edge, the row's status at a glance.
+	row.Accent = Fill(row, "ARTWORK", ACCENT)
+	row.Accent:SetPoint("TOPLEFT", row, "TOPLEFT", -PAD + 4, -3)
+	row.Accent:SetPoint("BOTTOMLEFT", row, "BOTTOMLEFT", -PAD + 4, 3)
+	row.Accent:SetWidth(2)
+	row.Accent:Hide()
+
+	row.Icon = ItemIcon(row, ICON)
+	row.Icon:SetPoint("LEFT", row, "LEFT", 0, 0)
+	row.IconEdge = Outline(row, row.Icon, { 1, 1, 1, 0.12 })
+
+	-- The collected tick rides on the corner of the offering's own icon.
+	row.Check = row:CreateTexture(nil, "OVERLAY")
 	row.Check:SetTexture("Interface\\AchievementFrame\\UI-Achievement-Criteria-Check")
 	row.Check:SetTexCoord(0, 0.65625, 0, 1)
-	row.Check:SetSize(16, 13)
-	row.Check:SetPoint("LEFT", row, "LEFT", 0, 0)
+	row.Check:SetSize(14, 11)
+	row.Check:SetPoint("BOTTOMRIGHT", row.Icon, "BOTTOMRIGHT", 4, -3)
 	row.Check:Hide()
 
-	row.Name = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-	row.Name:SetPoint("LEFT", row, "LEFT", 22, 0)
+	row.Name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	row.Name:SetPoint("LEFT", row, "LEFT", NAME_X, 0)
 	row.Name:SetWidth(NAME_W)
 	row.Name:SetJustifyH("LEFT")
 
 	row.Counts = {}
 	for column = 1, COUNT do
-		local text = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+		local text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 		text:SetPoint("CENTER", row, "LEFT", COL_X[column], 0)
 		text:SetWidth(COL_W)
 		text:SetJustifyH("CENTER")
 		row.Counts[column] = text
 	end
 
-	row:SetScript("OnEnter", ShowRowTooltip)
-	row:SetScript("OnLeave", GameTooltip_Hide)
+	row:SetScript("OnEnter", function(self)
+		self.Hover:Show()
+		ShowRowTooltip(self)
+	end)
+	row:SetScript("OnLeave", function(self)
+		self.Hover:Hide()
+		GameTooltip_Hide()
+	end)
 
 	return row
 end
@@ -178,20 +276,23 @@ end
 local function DrawHeader(state)
 	for index, ingredient in ipairs(ns.ingredients) do
 		local cell = headers[index]
+		cell.Icon:SetTexture(ns.GetItemIconFile(ingredient.id))
+
 		local bags = state.bags[ingredient.id]
-		cell.Count:SetText(ns.GetItemIcon(ingredient.id, 18) .. bags)
+		cell.Count:SetText(bags)
 		if bags == 0 then
-			cell.Count:SetTextColor(1, 0.25, 0.25)
+			cell.Count:SetTextColor(unpack(SHORT))
+			cell.Icon:SetDesaturated(true)
+			cell.Icon:SetAlpha(0.45)
 		else
-			cell.Count:SetTextColor(1, 0.82, 0)
+			cell.Count:SetTextColor(unpack(TEXT_BRIGHT))
+			cell.Icon:SetDesaturated(false)
+			cell.Icon:SetAlpha(1)
 		end
 
 		local stored = state.stored[ingredient.id]
-		if ns.db.showTotals and stored > 0 then
-			cell.Stored:SetText(string.format(L.STORED_AWAY, stored))
-		else
-			cell.Stored:SetText("")
-		end
+		cell.Stored:SetText(ns.db.showTotals and stored > 0
+			and string.format(L.STORED_AWAY, stored) or "")
 	end
 end
 
@@ -199,38 +300,50 @@ local function DrawRow(row, state, entry)
 	row.state = entry
 	row.suggested = ns.db.suggest and state.suggested == entry
 
+	row.Icon:SetTexture(ns.GetItemIconFile(entry.combination.itemID))
 	row.Name:SetText(entry.displayName)
 
-	local red, green, blue
+	local color
 	if entry.done then
-		red, green, blue = unpack(ns.db.dimDone and DONE_COLOR or SHORT_COLOR)
+		color = ns.db.dimDone and DONE or TEXT_BRIGHT
 		row.Check:Show()
+		row.Icon:SetDesaturated(ns.db.dimDone)
+		row.Icon:SetAlpha(ns.db.dimDone and 0.5 or 1)
 	else
 		row.Check:Hide()
-		if entry.affordable then
-			red, green, blue = unpack(READY_COLOR)
-		else
-			red, green, blue = unpack(SHORT_COLOR)
-		end
+		row.Icon:SetDesaturated(false)
+		row.Icon:SetAlpha(entry.affordable and 1 or 0.65)
+		color = entry.affordable and READY or TEXT_DIM
 	end
-	row.Name:SetTextColor(red, green, blue)
+	row.Name:SetTextColor(color[1], color[2], color[3])
 
 	if row.suggested and not entry.done then
 		row.Highlight:Show()
+		row.Accent:SetColorTexture(ACCENT[1], ACCENT[2], ACCENT[3], 1)
+		row.Accent:Show()
 	else
 		row.Highlight:Hide()
+		if not entry.done and entry.affordable then
+			row.Accent:SetColorTexture(READY[1], READY[2], READY[3], 0.75)
+			row.Accent:Show()
+		else
+			row.Accent:Hide()
+		end
 	end
 
 	for column, ingredient in ipairs(ns.ingredients) do
 		local need = entry.combination.counts[ingredient.id]
 		local text = row.Counts[column]
 		if not need then
-			text:SetText("")
+			-- A faint placeholder keeps the columns legible without the noise a
+			-- zero would add.
+			text:SetText("·")
+			text:SetTextColor(0.26, 0.27, 0.30)
 		elseif entry.missing[ingredient.id] then
 			text:SetText(MISSING_HEX .. need .. "|r")
 		else
 			text:SetText(tostring(need))
-			text:SetTextColor(red, green, blue)
+			text:SetTextColor(color[1], color[2], color[3])
 		end
 	end
 end
@@ -240,17 +353,19 @@ local function DrawFooter(state)
 
 	if not state.known then
 		footer.Progress:SetText(L.CRITERIA_UNKNOWN)
-		footer.Progress:SetTextColor(1, 0.5, 0.2)
+		footer.Progress:SetTextColor(unpack(ACCENT))
 	elseif state.remaining == 0 then
 		footer.Progress:SetText(L.ALL_DONE)
-		footer.Progress:SetTextColor(unpack(READY_COLOR))
+		footer.Progress:SetTextColor(unpack(READY))
 	else
 		local made = state.affordable > 0
 			and string.format(L.CAN_MAKE_NOW, state.affordable)
 			or L.CAN_MAKE_NONE
-		footer.Progress:SetText(string.format(L.PROGRESS, state.completed, total) .. " · " .. made)
-		footer.Progress:SetTextColor(1, 1, 1)
+		footer.Progress:SetText(string.format(L.PROGRESS, state.completed, total) .. "   ·   " .. made)
+		footer.Progress:SetTextColor(unpack(TEXT_BRIGHT))
 	end
+
+	footer.Bar:SetWidth(math.max(1, ROW_W * (state.known and state.completed or 0) / total))
 
 	if state.remaining == 0 then
 		footer.Need:SetText("")
@@ -259,8 +374,7 @@ local function DrawFooter(state)
 		for _, ingredient in ipairs(ns.ingredients) do
 			local need = state.stillNeed[ingredient.id]
 			if need > 0 then
-				local short = state.shortfall[ingredient.id]
-				if short > 0 then
+				if state.shortfall[ingredient.id] > 0 then
 					anyShort = true
 					table.insert(parts, ns.GetItemIcon(ingredient.id) .. MISSING_HEX .. need .. "|r")
 				else
@@ -268,20 +382,13 @@ local function DrawFooter(state)
 				end
 			end
 		end
-		if anyShort then
-			footer.Need:SetText(L.STILL_NEED .. " " .. table.concat(parts, "   "))
-		else
-			footer.Need:SetText(L.NOTHING_MISSING)
-		end
+		footer.Need:SetText(anyShort
+			and (L.STILL_NEED .. "  " .. table.concat(parts, "   "))
+			or L.NOTHING_MISSING)
 	end
 
-	if not state.onQuest then
-		footer.Note:SetText(L.NO_QUEST)
-		footer.Note:SetTextColor(1, 0.82, 0)
-	else
-		footer.Note:SetText(L.DAILY_NOTE)
-		footer.Note:SetTextColor(0.55, 0.55, 0.55)
-	end
+	footer.Note:SetText(state.onQuest and L.DAILY_NOTE or L.NO_QUEST)
+	footer.Note:SetTextColor(unpack(state.onQuest and TEXT_DIM or ACCENT))
 end
 
 function ns.Refresh()
@@ -367,12 +474,52 @@ end
 -- Construction
 --------------------------------------------------------------------------------
 
+local function BuildChrome()
+	local background = Fill(frame, "BACKGROUND", PANEL_BG)
+	background:SetAllPoints()
+	Outline(frame, background, PANEL_EDGE, "BORDER", 0)
+
+	local titleBar = Fill(frame, "BACKGROUND", TITLE_BG)
+	titleBar:SetPoint("TOPLEFT")
+	titleBar:SetPoint("TOPRIGHT")
+	titleBar:SetHeight(TITLE_H)
+
+	local accent = Fill(frame, "ARTWORK", { ACCENT[1], ACCENT[2], ACCENT[3], 0.55 })
+	accent:SetPoint("TOPLEFT", titleBar, "BOTTOMLEFT")
+	accent:SetPoint("TOPRIGHT", titleBar, "BOTTOMRIGHT")
+	accent:SetHeight(1)
+
+	local badge = frame:CreateTexture(nil, "ARTWORK")
+	badge:SetTexture(ns.ACHIEVEMENT_ICON)
+	badge:SetTexCoord(unpack(ICON_TRIM))
+	badge:SetSize(18, 18)
+	badge:SetPoint("LEFT", frame, "TOPLEFT", PAD, -TITLE_H / 2)
+	Outline(frame, badge, { 1, 1, 1, 0.16 })
+
+	frame.TitleText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	frame.TitleText:SetPoint("LEFT", badge, "RIGHT", 8, 0)
+	frame.TitleText:SetText(L.TITLE)
+	frame.TitleText:SetTextColor(unpack(TEXT_BRIGHT))
+
+	local close = CreateFrame("Button", nil, frame)
+	close:SetSize(TITLE_H, TITLE_H)
+	close:SetPoint("TOPRIGHT")
+	close.Glyph = close:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+	close.Glyph:SetPoint("CENTER")
+	close.Glyph:SetText("\195\151") -- multiplication sign, the tidiest × in the game fonts
+	close.Glyph:SetTextColor(unpack(TEXT_LABEL))
+	close:SetScript("OnEnter", function(self) self.Glyph:SetTextColor(unpack(SHORT)) end)
+	close:SetScript("OnLeave", function(self) self.Glyph:SetTextColor(unpack(TEXT_LABEL)) end)
+	close:SetScript("OnClick", function() frame:Hide() end)
+	frame.CloseButton = close
+end
+
 function ns.InitWindow()
 	if frame then
 		return
 	end
 
-	frame = CreateFrame("Frame", "MysteriousMixHelperFrame", UIParent, "BasicFrameTemplateWithInset")
+	frame = CreateFrame("Frame", "MysteriousMixHelperFrame", UIParent)
 	frame:SetSize(WIDTH, HEIGHT)
 	frame:SetFrameStrata("HIGH")
 	frame:SetClampedToScreen(true)
@@ -381,7 +528,7 @@ function ns.InitWindow()
 	frame:RegisterForDrag("LeftButton")
 	frame:Hide()
 
-	frame.TitleText:SetText(L.TITLE)
+	BuildChrome()
 
 	if ns.db.point then
 		frame:SetPoint(ns.db.point, UIParent, ns.db.point, ns.db.x, ns.db.y)
@@ -413,7 +560,8 @@ function ns.InitWindow()
 	end)
 	table.insert(UISpecialFrames, "MysteriousMixHelperFrame")
 
-	Label(frame, "GameFontNormalSmall", "TOPLEFT", PAD, HEADER_Y, nil, "LEFT"):SetText(L.IN_YOUR_BAGS)
+	Text(frame, "GameFontNormalSmall", PAD, LABEL_Y, nil, "LEFT", TEXT_LABEL)
+		:SetText(string.upper(L.IN_YOUR_BAGS))
 
 	headers = {}
 	for index = 1, COUNT do
@@ -430,10 +578,19 @@ function ns.InitWindow()
 	Rule(frame, RULE2_Y)
 
 	footer = {
-		Progress = Label(frame, "GameFontNormalSmall", "TOPLEFT", PAD, PROGRESS_Y, ROW_W, "LEFT"),
-		Need     = Label(frame, "GameFontHighlightSmall", "TOPLEFT", PAD, NEED_Y, ROW_W, "LEFT"),
-		Note     = Label(frame, "GameFontDisableSmall", "TOPLEFT", PAD, NOTE_Y, ROW_W, "LEFT"),
+		Progress = Text(frame, "GameFontNormalSmall", PAD, PROG_Y, ROW_W, "LEFT", TEXT_BRIGHT),
+		Need     = Text(frame, "GameFontHighlightSmall", PAD, NEED_Y, ROW_W, "LEFT", TEXT_BRIGHT),
+		Note     = Text(frame, "GameFontDisableSmall", PAD, NOTE_Y, ROW_W, "LEFT", TEXT_DIM),
 	}
+
+	-- A thin progress bar along the very bottom edge: ten criteria, one window.
+	local track = Fill(frame, "ARTWORK", { 1, 1, 1, 0.05 })
+	track:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", PAD, 8)
+	track:SetSize(ROW_W, 2)
+	footer.Bar = Fill(frame, "OVERLAY", { ACCENT[1], ACCENT[2], ACCENT[3], 0.85 })
+	footer.Bar:SetPoint("LEFT", track, "LEFT")
+	footer.Bar:SetHeight(2)
+	footer.Bar:SetWidth(1)
 
 	-- Handles for the test harness, and convenient at a /dump prompt in game.
 	ns.window, ns.rows, ns.headers, ns.footer = frame, rows, headers, footer

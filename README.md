@@ -9,26 +9,23 @@ Mysterious Offering — and the achievement wants all ten. The quest is a daily 
 is shared across your warband, so you get one attempt a day and there is no
 in-game feedback while you pick.
 
-Target Ofi with the quest in your log and this window opens:
+Target Ofi with the quest in your log and a window opens: one row per
+combination, wearing the icon of the offering it produces, against three columns
+holding what you are carrying of each ingredient.
 
-| | | Bone | Feather | Pearl |
-|---|---|---|---|---|
-| | **In your bags** | **3** | **1** | **5** |
-| ✓ | Choleric Offering | | | 3 |
-| | Virulent Offering | | 1 | 2 |
-| | Volatile Offering | 1 | | 2 |
-| | Phlegmatic Offering | | <span style="color:red">3</span> | |
-| … | | | | |
-
-- **Ticked** rows are already credited towards the achievement.
-- **Green** rows you can hand in right now.
+- A **tick on the offering's icon**, and a greyed row, means it is already
+  credited towards the achievement.
+- A **green bar** down the left edge marks a mix you can hand in right now.
 - **Red numbers** are what you are short of, counting only your bags — a bank is
   no use standing in front of Ofi.
-- One row is marked **suggested**: of the mixes you can afford today, the one
-  that leaves the most of the remaining ones still within reach. It is a
+- One row is marked **suggested**, in gold: of the mixes you can afford today,
+  the one that leaves the most of the remaining ones still within reach. It is a
   heuristic, not an instruction — you can always buy more ingredients.
 - The footer totals what your remaining combinations still need altogether.
   From scratch that is ten of each.
+
+Hovering a row gives you the offering's own item tooltip, then the ingredients
+it takes and what you are missing.
 
 Offering names come from the achievement's own criteria, so they show up in your
 client's language without the addon shipping a translation.

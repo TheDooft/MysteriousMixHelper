@@ -16,7 +16,7 @@ local names = {}     -- itemID -> localised name; absent means "not cached yet"
 local requested = {}
 local chat = {}
 
-local criteria = {}  -- list of { id = criteriaID, name = string, completed = bool }
+local criteria = {}  -- list of { asset = itemID, id = criteriaID, name, completed }
 local questLog = {}  -- questID -> true
 local targetGUID = nil
 
@@ -63,7 +63,7 @@ _G.GetAchievementCriteriaInfo = function(_, index)
 	if not entry then return nil end
 	-- criteriaString, criteriaType, completed, quantity, reqQuantity, charName,
 	-- flags, assetID, quantityString, criteriaID
-	return entry.name, 0, entry.completed, 0, 1, nil, 0, 0, nil, entry.id
+	return entry.name, 0, entry.completed, 0, 1, nil, 0, entry.asset, nil, entry.id
 end
 
 -- Read the real TOC, so a test can catch the version going missing from it.
@@ -98,9 +98,14 @@ local function Region()
 	function region:SetWidth() end
 	function region:SetHeight() end
 	function region:SetJustifyH() end
-	function region:SetTexture() end
+	function region:SetTexture(value) self.texture = value end
+	function region:GetTexture() return self.texture end
 	function region:SetTexCoord() end
 	function region:SetColorTexture() end
+	function region:SetDesaturated(value) self.desaturated = value and true or false end
+	function region:SetVertexColor() end
+	function region:SetAlpha(value) self.alpha = value end
+	function region:GetAlpha() return self.alpha or 1 end
 	function region:SetText(text) self.text = tostring(text or "") end
 	function region:GetText() return self.text or "" end
 	function region:SetTextColor(r, g, b) self.r, self.g, self.b = r, g, b end
@@ -200,14 +205,20 @@ local function SetTarget(npcID)
 end
 
 -- Criteria in the order the client hands them out, which is not the addon's.
-local function SetCriteria(completedNames)
+--
+-- The asset is the offering's item id and the criteria id is something else
+-- entirely, exactly as the real achievement is built. `options.noAsset` drops
+-- the asset so the fallback path gets exercised too.
+local function SetCriteria(completedNames, options)
+	options = options or {}
 	local done = {}
 	for _, name in ipairs(completedNames or {}) do done[name] = true end
 	criteria = {}
 	for index = #ns.combinations, 1, -1 do
 		local combination = ns.combinations[index]
 		table.insert(criteria, {
-			id = combination.criteriaID,
+			asset = not options.noAsset and combination.itemID or 0,
+			id = 900000 + index,
 			name = combination.name,
 			completed = done[combination.name] == true,
 		})
@@ -229,6 +240,9 @@ local function Rows()
 			counts = counts,
 			check = row.Check:IsShown(),
 			highlight = row.Highlight:IsShown(),
+			accent = row.Accent:IsShown(),
+			icon = row.Icon:GetTexture(),
+			dimmed = row.Icon.desaturated == true,
 			color = { row.Name.r, row.Name.g, row.Name.b },
 			frame = row,
 		}
