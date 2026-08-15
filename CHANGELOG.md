@@ -4,8 +4,9 @@
 
 - Ofi the Sly is a woman. The French strings called her "Ofi le Malin", which
   was both the wrong gender and a name I had made up — the client calls her
-  **Ofi la Sournoise**. Corrected, along with the English pronouns in the
-  documentation.
+  **Ofi la Sournoise**. Corrected in the locale table, the TOC's French notes,
+  and the English pronouns through the documentation.
+- Carries the CurseForge project id, so the packager can upload.
 
 ## v1.9.1
 
