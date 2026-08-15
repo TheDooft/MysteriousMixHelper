@@ -8,6 +8,7 @@ local defaults = {
 	dimDone      = true,
 	suggest      = true,
 	showTotals   = true,
+	bubbles      = true,
 	locked       = false,
 	-- Window placement, filled in when the player drags it.
 	point        = nil,
@@ -17,7 +18,8 @@ local defaults = {
 
 -- Order used by both the options panel and the slash command listing.
 local optionOrder = {
-	"autoShow", "autoHide", "requireQuest", "dimDone", "suggest", "showTotals", "locked",
+	"autoShow", "autoHide", "requireQuest", "dimDone", "suggest", "showTotals",
+	"bubbles", "locked",
 }
 
 local optionLabels = {
@@ -27,6 +29,7 @@ local optionLabels = {
 	dimDone      = { L.OPT_HIDE_DONE,     L.OPT_HIDE_DONE_TT },
 	suggest      = { L.OPT_SUGGEST,       L.OPT_SUGGEST_TT },
 	showTotals   = { L.OPT_SHOW_TOTALS,   L.OPT_SHOW_TOTALS_TT },
+	bubbles      = { L.OPT_BUBBLES,       L.OPT_BUBBLES_TT },
 	locked       = { L.OPT_LOCKED,        L.OPT_LOCKED_TT },
 }
 

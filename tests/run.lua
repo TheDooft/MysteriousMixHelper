@@ -304,6 +304,51 @@ H.SetQuest(true)
 H.Fire("QUEST_LOG_UPDATE")
 check("back to the daily note when on the quest", has(H.footer.Note:GetText(), ns.L.DAILY_NOTE))
 
+print("=== the simmering cauldron ===")
+do
+	check("there are bubbles", #ns.bubbles == 16)
+	check("they are scattered on the first fill, not all at the bottom",
+		ns.bubbles[1].y ~= ns.bubbles[2].y or ns.bubbles[2].y ~= ns.bubbles[3].y)
+
+	local before = ns.bubbles[1].y
+	H.Tick(0.05)
+	check("a tick moves them up", ns.bubbles[1].y > before)
+
+	-- Run long enough that every bubble must have topped out and come back.
+	H.Tick(0.05, 600)
+	local lowest, highest, faded = math.huge, -math.huge, true
+	for _, bubble in ipairs(ns.bubbles) do
+		lowest = math.min(lowest, bubble.y)
+		highest = math.max(highest, bubble.y)
+		if bubble.texture:GetAlpha() > 0.14 then faded = false end
+	end
+	check("none has escaped the bottom", lowest >= 0)
+	check("none has climbed past the top", highest < ns.BUBBLE_TRAVEL)
+	check("and none is ever more than faint", faded)
+
+	-- Position is set through the widget, which the harness does not model, so
+	-- the sway is checked on the state the maths actually runs on.
+	local swayed = false
+	for _, bubble in ipairs(ns.bubbles) do
+		if bubble.sway > 0 and bubble.phase > 0 then swayed = true end
+	end
+	check("they sway as they rise", swayed)
+
+	ns.db.bubbles = false
+	ns.OnOptionChanged("bubbles")
+	local hidden = true
+	for _, bubble in ipairs(ns.bubbles) do
+		if bubble.texture:IsShown() then hidden = false end
+	end
+	check("the option puts them out", hidden)
+	local still = ns.bubbles[1].y
+	H.Tick(0.05, 10)
+	check("and stops the animation", ns.bubbles[1].y == still)
+	ns.db.bubbles = true
+	ns.OnOptionChanged("bubbles")
+	check("and lights them again", ns.bubbles[1].texture:IsShown())
+end
+
 print("=== credits ===")
 do
 	local badge = ns.window.Badge

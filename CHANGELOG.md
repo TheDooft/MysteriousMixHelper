@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.5.0
+
+- Ofi's cauldron now simmers behind the table: faint bubbles rise, sway and
+  thin out before the top. Purely decorative, and off with `/mmh bubbles` or
+  the "Keep the cauldron simmering" option.
+
 ## v1.4.0
 
 - On a character that cannot take the daily yet, the bottom line now names the

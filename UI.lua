@@ -37,6 +37,19 @@ local MISSING_HEX = "|cffee5555"
 -- square that suits a flat panel.
 local ICON_TRIM = { 0.07, 0.93, 0.07, 0.93 }
 
+-- Ofi's cauldron, simmering behind the table. Blizzard's own loading spinner
+-- ring, tinted and blended additively so it reads as a bubble on dark ground.
+-- Kept very faint on purpose: this sits under ten rows of text it must never
+-- compete with.
+local BUBBLE_TEXTURE = "Interface\\COMMON\\StreamCircle"
+local BUBBLE_COLOR   = { 0.42, 0.95, 0.60 }
+local BUBBLE_COUNT   = 16
+local BUBBLE_ALPHA   = { 0.04, 0.13 }
+local BUBBLE_SIZE    = { 4, 13 }
+local BUBBLE_SPEED   = { 10, 32 }   -- pixels a second
+local BUBBLE_SWAY    = { 2, 8 }     -- pixels either side of the rise
+local BUBBLE_INSET   = 4            -- above the bottom edge
+
 --------------------------------------------------------------------------------
 -- Layout
 --------------------------------------------------------------------------------
@@ -72,8 +85,13 @@ local NEED_Y   = PROG_Y + 20
 local NOTE_Y   = NEED_Y + 20
 local HEIGHT   = NOTE_Y + 22
 
-local frame, rows, headers, footer
+local frame, rows, headers, footer, bubbles
 local programmaticHide, manualOpen, suppressed = false, false, false
+
+-- How far a bubble climbs. Stops short of the title bar by its own largest
+-- size, so one can never poke out over the header.
+local BUBBLE_TRAVEL = HEIGHT - TITLE_H - BUBBLE_SIZE[2] - BUBBLE_INSET * 2
+ns.BUBBLE_TRAVEL = BUBBLE_TRAVEL
 
 -- The last state drawn, so a tooltip opening later can quote the same numbers
 -- the window is showing rather than recomputing them.
@@ -137,6 +155,79 @@ local function Outline(parent, anchor, color, layer, spread)
 		strips[index] = strip
 	end
 	return strips
+end
+
+--------------------------------------------------------------------------------
+-- The cauldron
+--------------------------------------------------------------------------------
+
+local function Between(range)
+	return range[1] + math.random() * (range[2] - range[1])
+end
+
+-- Send a bubble back to the bottom with a fresh set of numbers, so the pattern
+-- never settles into a loop the eye can pick out.
+local function ResetBubble(bubble, atBottom)
+	bubble.size  = Between(BUBBLE_SIZE)
+	bubble.x     = math.random() * (WIDTH - BUBBLE_SWAY[2] * 2 - bubble.size) + BUBBLE_SWAY[2]
+	bubble.speed = Between(BUBBLE_SPEED)
+	bubble.sway  = Between(BUBBLE_SWAY)
+	bubble.rate  = 0.5 + math.random() * 1.8
+	bubble.peak  = Between(BUBBLE_ALPHA)
+	bubble.phase = math.random() * math.pi * 2
+	-- On the first fill they are scattered up the window, so it is already
+	-- simmering when it opens rather than starting empty.
+	bubble.y     = atBottom and 0 or math.random() * BUBBLE_TRAVEL
+	bubble.texture:SetSize(bubble.size, bubble.size)
+end
+
+local function StepBubbles(elapsed)
+	for _, bubble in ipairs(bubbles) do
+		bubble.y = bubble.y + bubble.speed * elapsed
+		bubble.phase = bubble.phase + bubble.rate * elapsed
+		if bubble.y >= BUBBLE_TRAVEL then
+			ResetBubble(bubble, true)
+		end
+
+		local progress = bubble.y / BUBBLE_TRAVEL
+		-- Swell in off the bottom, thin out before the top: no bubble should
+		-- ever appear or vanish mid-window.
+		local fade = math.min(1, progress * 8) * math.min(1, (1 - progress) * 5)
+		bubble.texture:SetAlpha(bubble.peak * fade)
+		bubble.texture:ClearAllPoints()
+		bubble.texture:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT",
+			bubble.x + math.sin(bubble.phase) * bubble.sway,
+			BUBBLE_INSET + bubble.y)
+	end
+end
+
+local function CreateBubbles(parent)
+	local list = {}
+	for index = 1, BUBBLE_COUNT do
+		-- Sub-level 2 puts them over the panel background; the rows are child
+		-- frames, so text and icons stay in front without any further ordering.
+		local texture = parent:CreateTexture(nil, "BACKGROUND", nil, 2)
+		texture:SetTexture(BUBBLE_TEXTURE)
+		texture:SetBlendMode("ADD")
+		texture:SetVertexColor(unpack(BUBBLE_COLOR))
+		list[index] = { texture = texture }
+	end
+	return list
+end
+
+-- Called when the option is toggled and when the window opens.
+local function ApplyBubbles()
+	if not bubbles then
+		return
+	end
+	for _, bubble in ipairs(bubbles) do
+		if ns.db.bubbles then
+			ResetBubble(bubble, false)
+			bubble.texture:Show()
+		else
+			bubble.texture:Hide()
+		end
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -538,6 +629,7 @@ end
 
 local function ShowWindow()
 	frame:Show()
+	ApplyBubbles()
 	ns.Refresh()
 end
 
@@ -587,6 +679,8 @@ end
 function ns.OnOptionChanged(key)
 	if key == "locked" and frame then
 		frame:SetMovable(not ns.db.locked)
+	elseif key == "bubbles" then
+		ApplyBubbles()
 	end
 	ns.Refresh()
 	UpdateVisibility()
@@ -672,6 +766,16 @@ function ns.InitWindow()
 	frame:Hide()
 
 	BuildChrome()
+
+	bubbles = CreateBubbles(frame)
+	ns.bubbles = bubbles
+	-- OnUpdate only runs while the frame is shown, so a closed window costs
+	-- nothing.
+	frame:SetScript("OnUpdate", function(_, elapsed)
+		if ns.db.bubbles then
+			StepBubbles(elapsed)
+		end
+	end)
 
 	if ns.db.point then
 		frame:SetPoint(ns.db.point, UIParent, ns.db.point, ns.db.x, ns.db.y)

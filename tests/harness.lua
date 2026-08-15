@@ -117,6 +117,7 @@ local function Region()
 	function region:SetTexCoord() end
 	function region:SetColorTexture() end
 	function region:SetDesaturated(value) self.desaturated = value and true or false end
+	function region:SetBlendMode(mode) self.blend = mode end
 	function region:SetVertexColor() end
 	function region:SetAlpha(value) self.alpha = value end
 	function region:GetAlpha() return self.alpha or 1 end
@@ -288,6 +289,14 @@ return {
 	end,
 	Relock = function()
 		for _, step in ipairs(ns.unlockChain) do questDone[step.questID] = nil end
+	end,
+	-- Drive the window's OnUpdate, which is what animates the cauldron.
+	Tick = function(seconds, steps)
+		local handler = window.scripts.OnUpdate
+		if not handler then return end
+		for _ = 1, steps or 1 do
+			handler(window, seconds)
+		end
 	end,
 	SetGUID = function(guid) targetGUID = guid end,
 	bags = bags,

@@ -61,6 +61,8 @@ local L = {
 	OPT_SUGGEST_TT   = "Point out which of the mixes you can afford leaves you best placed for the ones you still need.",
 	OPT_SHOW_TOTALS  = "Count bank and warband bank",
 	OPT_SHOW_TOTALS_TT = "Also show what you have stored away. Only what is in your bags can actually be handed to Ofi, so stored items are shown separately.",
+	OPT_BUBBLES      = "Keep the cauldron simmering",
+	OPT_BUBBLES_TT   = "Drift bubbles up behind the table. Purely decorative, and faint enough not to fight the text.",
 	OPT_LOCKED       = "Lock the window",
 	OPT_LOCKED_TT    = "Stop the window being dragged around.",
 
@@ -131,6 +133,8 @@ local translations = {
 		OPT_SUGGEST_TT   = "Indique lequel des mélanges à votre portée vous laisse le mieux placé pour ceux qu'il vous reste.",
 		OPT_SHOW_TOTALS  = "Compter banque et banque de bataillon",
 		OPT_SHOW_TOTALS_TT = "Affiche aussi ce que vous avez rangé. Seul le contenu des sacs peut être donné à Ofi, le reste est donc indiqué à part.",
+		OPT_BUBBLES      = "Laisser mijoter le chaudron",
+		OPT_BUBBLES_TT   = "Fait monter des bulles derrière le tableau. Purement décoratif, et assez discret pour ne pas gêner la lecture.",
 		OPT_LOCKED       = "Verrouiller la fenêtre",
 		OPT_LOCKED_TT    = "Empêche de déplacer la fenêtre à la souris.",
 

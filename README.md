@@ -94,6 +94,7 @@ screen. Each option can also be toggled by name, e.g. `/mmh autoHide`.
 | `dimDone` | on | Grey out combinations you have already turned in. |
 | `suggest` | on | Mark a suggested mix. |
 | `showTotals` | on | Also show what you have in bank and warband bank. |
+| `bubbles` | on | Simmer the cauldron behind the table. Decoration only. |
 | `locked` | off | Stop the window being dragged. |
 
 ## Development
