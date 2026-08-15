@@ -45,19 +45,24 @@ client's language without the addon shipping a translation.
 | Eerie | 2 | 1 | |
 | Balanced | 1 | 1 | 1 |
 
-## Where the ingredients come from
+## Unlocking the daily
 
-All three open out of [Handful of Esoteric Ingredients][container], a container
-picked up as treasure around The Coiled Isle. One bag can hold more than one
-kind, so there is no separate place to farm each: roughly 85% of bags hold a
-knucklebone, 74% a feather, 84% a blood-pearl. The ingredients themselves are
-tradable, so the auction house is an option once the daily is unlocked.
+On a character that cannot take the quest yet, the bottom line of the window
+names the next step and the tooltip lays out the route:
 
-A tip doing the rounds has each ingredient dropping near a different sort of mob
-— knucklebones by graveyards, feathers by serpents, pearls along the shore.
-Wowhead's loot data does not bear that out; it is one container for all three.
+1. [What Lies Beyond the Fog](https://www.wowhead.com/quest=92924) — the Curse
+   of Ula'tek campaign quest that carries you across to Tokka's Landing.
+2. [Esoteric Ingredients](https://www.wowhead.com/quest=97026) — started by an
+   item looted on the isle, handed in to Ofi the Sly.
 
-[container]: https://www.wowhead.com/item=278084/handful-of-esoteric-ingredients
+The isle itself is a warband unlock but campaign progress is per character, so
+an alt has to walk this itself. Wowhead publishes no prerequisite link for the
+daily, so the chain is read off the quests rather than stated by the game; the
+wording says "step N of M" rather than claiming these are the only gates.
+
+The window also says when today's mix has already been spent — including when
+another character in the warband spent it, which is the state most likely to
+leave you puzzling at Ofi.
 
 ## Credits
 

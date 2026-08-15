@@ -51,8 +51,19 @@ _G.C_Item = {
 	end,
 }
 
+local questDone = {}        -- questID -> completed by this character
+local questDoneAccount = {} -- questID -> completed by someone in the warband
+local questTitles = {}      -- questID -> localised title; absent means uncached
+local questsRequested = {}
+
 _G.C_QuestLog = {
 	IsOnQuest = function(questID) return questLog[questID] == true end,
+	IsQuestFlaggedCompleted = function(questID) return questDone[questID] == true end,
+	IsQuestFlaggedCompletedOnAccount = function(questID)
+		return questDone[questID] == true or questDoneAccount[questID] == true
+	end,
+	GetTitleForQuestID = function(questID) return questTitles[questID] end,
+	RequestLoadQuestByID = function(questID) questsRequested[questID] = true end,
 }
 
 _G.UnitGUID = function(unit) return unit == "target" and targetGUID or nil end
@@ -267,6 +278,17 @@ return {
 	SetCriteria = SetCriteria,
 	ClearCriteria = ClearCriteria,
 	SetQuest = function(has) questLog[ns.QUEST_ID] = has or nil end,
+	questDone = questDone,
+	questDoneAccount = questDoneAccount,
+	questTitles = questTitles,
+	questsRequested = questsRequested,
+	-- Walk the whole unlock chain, as a character who has done the campaign.
+	Unlock = function()
+		for _, step in ipairs(ns.unlockChain) do questDone[step.questID] = true end
+	end,
+	Relock = function()
+		for _, step in ipairs(ns.unlockChain) do questDone[step.questID] = nil end
+	end,
 	SetGUID = function(guid) targetGUID = guid end,
 	bags = bags,
 	stored = stored,

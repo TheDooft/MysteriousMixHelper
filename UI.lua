@@ -173,17 +173,6 @@ local function ShowIngredientTooltip(owner, ingredient)
 		end
 	end
 
-	-- These lines run long, so they are added with wrapping on. That trailing
-	-- `true` is why the colours are spelled out rather than unpacked.
-	GameTooltip:AddLine(" ")
-	GameTooltip:AddLine(L.TT_WHERE, ACCENT[1], ACCENT[2], ACCENT[3])
-	GameTooltip:AddLine(string.format(L.TT_FROM,
-		ns.GetItemName(ns.CONTAINER_ID, ns.CONTAINER_NAME)), 1, 1, 1, true)
-	GameTooltip:AddLine(string.format(L.TT_FROM_CHANCE, ingredient.chance),
-		TEXT_LABEL[1], TEXT_LABEL[2], TEXT_LABEL[3], true)
-	GameTooltip:AddLine(L.TT_TRADABLE,
-		TEXT_LABEL[1], TEXT_LABEL[2], TEXT_LABEL[3], true)
-
 	GameTooltip:Show()
 end
 
@@ -499,8 +488,28 @@ local function DrawFooter(state)
 		end
 	end
 
-	footer.Note:SetText(state.onQuest and L.DAILY_NOTE or L.NO_QUEST)
-	footer.Note:SetTextColor(unpack(state.onQuest and TEXT_DIM or ACCENT))
+	-- The bottom line answers "why can I not hand anything in", in the order the
+	-- player runs into the obstacles: chain first, then today's mix, then the
+	-- quest simply not being picked up.
+	local unlock = state.unlock
+	local text, color
+	if not unlock.ready then
+		text = string.format(L.UNLOCK_STEP, unlock.nextIndex, #unlock.steps)
+			.. " " .. unlock.nextStep.title
+		color = ACCENT
+	elseif state.onQuest then
+		text, color = L.DAILY_NOTE, TEXT_DIM
+	elseif unlock.doneToday then
+		text, color = L.DAILY_DONE, TEXT_DIM
+	elseif unlock.doneByOther then
+		text, color = L.DAILY_DONE_ALT, TEXT_DIM
+	else
+		text, color = L.NO_QUEST, ACCENT
+	end
+
+	footer.Note:SetText(text)
+	footer.Note:SetTextColor(color[1], color[2], color[3])
+	footer.NoteHit:SetShown(not unlock.ready)
 end
 
 function ns.Refresh()
@@ -721,6 +730,37 @@ function ns.InitWindow()
 	for index = 1, COUNT do
 		footer.Chips[index] = CreateNeedChip(frame, index)
 	end
+
+	-- A hit area over the bottom line, shown only while the chain is unfinished:
+	-- the line names the next step, the tooltip lays out the whole route.
+	local hit = CreateFrame("Frame", nil, frame)
+	hit:SetPoint("TOPLEFT", frame, "TOPLEFT", PAD, -(NOTE_Y - 2))
+	hit:SetSize(ROW_W, 16)
+	hit:EnableMouse(true)
+	hit:SetScript("OnEnter", function(self)
+		local unlock = shown and shown.unlock
+		if not unlock then
+			return
+		end
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine(L.UNLOCK_TITLE, 1, 1, 1)
+		for _, step in ipairs(unlock.steps) do
+			local mark = step.completed and "|cff6be67a+|r" or "|cffffb833>|r"
+			local hue = step.completed and DONE or TEXT_BRIGHT
+			GameTooltip:AddLine(mark .. " " .. step.title, hue[1], hue[2], hue[3])
+			if not step.completed then
+				GameTooltip:AddLine("     " .. step.hint,
+					TEXT_LABEL[1], TEXT_LABEL[2], TEXT_LABEL[3], true)
+			end
+		end
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine(L.UNLOCK_CAVEAT,
+			TEXT_DIM[1], TEXT_DIM[2], TEXT_DIM[3], true)
+		GameTooltip:Show()
+	end)
+	hit:SetScript("OnLeave", GameTooltip_Hide)
+	hit:Hide()
+	footer.NoteHit = hit
 
 	-- A thin progress bar along the very bottom edge: ten criteria, one window.
 	local track = Fill(frame, "ARTWORK", { 1, 1, 1, 0.05 })

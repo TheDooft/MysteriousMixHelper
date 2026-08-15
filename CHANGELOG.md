@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.4.0
+
+- On a character that cannot take the daily yet, the bottom line now names the
+  next step towards unlocking it, and hovering that line lays out the whole
+  route with what is already done ticked off. Quest titles come from the
+  client, so they arrive in your language.
+- The window now also opens at Ofi for a character still working up to the
+  daily — previously "only with the quest in your log" hid it from exactly the
+  character that most needed telling. The option is renamed to match.
+- Says when today's mix has already been spent, including the case where
+  another character in the warband spent it.
+- Removed the "where to find it" note from ingredient tooltips. All three list
+  the same container on Wowhead, so it said the same thing three times; whether
+  separate treasures favour separate ingredients is disputed between players
+  and not something this addon should assert.
+
 ## v1.3.0
 
 - Ingredient tooltips now say where to find more: the container they open out

@@ -95,14 +95,29 @@ check("Ofi plus the quest opens it", H.window:IsShown())
 H.SetTarget(nil)
 check("losing the target closes it", not H.window:IsShown())
 
+-- A character that has finished the chain but not picked the daily up has
+-- nothing to be told, so the window stays out of the way.
 H.SetQuest(false)
+H.Unlock()
+H.SetTarget(nil)
 H.SetTarget(OFI)
-check("no quest, no window", not H.window:IsShown())
+check("no quest and nothing to explain, no window", not H.window:IsShown())
+
+-- One that has not unlocked it does, which is the whole point of the chain.
+H.Relock()
+H.SetTarget(nil)
+H.SetTarget(OFI)
+check("but it opens for a character still working up to it", H.window:IsShown())
+
+H.Unlock()
+H.SetTarget(nil)
+H.SetTarget(OFI)
 ns.db.requireQuest = false
 H.SetTarget(nil)
 H.SetTarget(OFI)
-check("unless the quest is not required", H.window:IsShown())
+check("and always, once the option is off", H.window:IsShown())
 ns.db.requireQuest = true
+H.Relock()
 H.SetQuest(true)
 H.SetTarget(nil)
 H.SetTarget(OFI)
@@ -219,13 +234,75 @@ do
 	check("reports what is in your bags", has(text, ns.L.TT_IN_BAGS))
 	check("and how much the remaining mixes want", has(text, ns.L.TT_NEEDED))
 	check("and the shortfall", has(text, ns.L.TT_SHORT_BY))
-	check("and where to find more", has(text, ns.L.TT_WHERE))
-	check("naming the container", has(text, ns.CONTAINER_NAME))
-	check("with that ingredient's own drop share",
-		has(text, tostring(ns.ingredients[2].chance) .. "%"))
-	check("and asks the client to cache the container's name",
-		H.requested[ns.CONTAINER_ID] == true)
 end
+
+print("=== unlocking the daily on a fresh character ===")
+H.Relock()
+H.Fire("QUEST_LOG_UPDATE")
+do
+	local unlock = ns.BuildState().unlock
+	check("nothing done yet", unlock.completed == 0 and not unlock.ready)
+	check("the first step is the one named", unlock.nextIndex == 1)
+	check("the bottom line names it",
+		has(H.footer.Note:GetText(), unlock.nextStep.title))
+	check("and says which step it is", has(H.footer.Note:GetText(), "1"))
+	check("the line becomes hoverable", H.footer.NoteHit:IsShown())
+
+	local hit = H.footer.NoteHit
+	hit:GetScript("OnEnter")(hit)
+	local text = strip(table.concat(H.tooltip.lines, "\n"))
+	check("the tooltip lays out the whole route", has(text, ns.L.UNLOCK_TITLE))
+	for _, step in ipairs(ns.unlockChain) do
+		check("listing " .. step.name, has(text, step.name))
+	end
+	check("with what to do next", has(text, ns.L.UNLOCK_ISLE))
+	check("and warns the campaign is per character", has(text, ns.L.UNLOCK_CAVEAT))
+	check("uncached quest titles are asked for",
+		H.questsRequested[ns.unlockChain[1].questID] == true)
+end
+
+print("=== part-way through the chain ===")
+H.questDone[ns.unlockChain[1].questID] = true
+H.Fire("QUEST_LOG_UPDATE")
+do
+	local unlock = ns.BuildState().unlock
+	check("one down", unlock.completed == 1 and not unlock.ready)
+	check("now pointing at step 2", unlock.nextIndex == 2)
+	check("the bottom line moved on",
+		has(H.footer.Note:GetText(), ns.unlockChain[2].name))
+
+	-- The client's own title wins over the enUS one shipped in Data.lua.
+	H.questTitles[ns.unlockChain[2].questID] = "Ingrédients ésotériques"
+	H.Fire("QUEST_LOG_UPDATE")
+	check("a cached title is used", has(H.footer.Note:GetText(), "Ingrédients ésotériques"))
+	H.questTitles[ns.unlockChain[2].questID] = nil
+end
+
+print("=== chain done, daily not in the log ===")
+H.Unlock()
+H.SetQuest(false)
+H.Fire("QUEST_LOG_UPDATE")
+do
+	check("no more unlock line", ns.BuildState().unlock.ready)
+	check("it asks you to pick the quest up", has(H.footer.Note:GetText(), ns.L.NO_QUEST))
+	check("and stops being hoverable", not H.footer.NoteHit:IsShown())
+
+	H.questDone[ns.QUEST_ID] = true
+	H.Fire("QUEST_LOG_UPDATE")
+	check("today's mix already spent is said so", has(H.footer.Note:GetText(), ns.L.DAILY_DONE))
+	H.questDone[ns.QUEST_ID] = nil
+
+	-- The confusing one: this character never mixed, but the warband did.
+	H.questDoneAccount[ns.QUEST_ID] = true
+	H.Fire("QUEST_LOG_UPDATE")
+	check("another character having mixed is called out",
+		has(H.footer.Note:GetText(), ns.L.DAILY_DONE_ALT))
+	H.questDoneAccount[ns.QUEST_ID] = nil
+end
+
+H.SetQuest(true)
+H.Fire("QUEST_LOG_UPDATE")
+check("back to the daily note when on the quest", has(H.footer.Note:GetText(), ns.L.DAILY_NOTE))
 
 print("=== credits ===")
 do

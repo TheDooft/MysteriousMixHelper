@@ -166,6 +166,55 @@ function ns.HasQuest()
 	return C_QuestLog.IsOnQuest(ns.QUEST_ID) and true or false
 end
 
+-- A quest's title in the player's language, or the enUS one shipped in Data.lua
+-- until the client has it. Same pattern as item names.
+function ns.GetQuestTitle(questID, fallback)
+	local title = C_QuestLog.GetTitleForQuestID(questID)
+	if title and title ~= "" then
+		return title
+	end
+	C_QuestLog.RequestLoadQuestByID(questID)
+	return fallback or tostring(questID)
+end
+
+-- How far this character has got towards Ofi offering the daily at all, and
+-- whether today's mix has already been spent.
+--
+-- `steps` is the chain with a completed flag each; `nextStep` is the first one
+-- outstanding, or nil once they are all done. `doneToday` covers the case that
+-- confuses people most on an alt: the chain is finished, but another character
+-- in the warband already used today's mix.
+function ns.GetUnlockState()
+	local state = { steps = {}, completed = 0 }
+
+	for index, step in ipairs(ns.unlockChain) do
+		local done = C_QuestLog.IsQuestFlaggedCompleted(step.questID) and true or false
+		state.steps[index] = {
+			questID   = step.questID,
+			title     = ns.GetQuestTitle(step.questID, step.name),
+			hint      = ns.L[step.hint],
+			completed = done,
+		}
+		if done then
+			state.completed = state.completed + 1
+		elseif not state.nextStep then
+			state.nextStep = state.steps[index]
+			state.nextIndex = index
+		end
+	end
+
+	state.ready = state.nextStep == nil
+
+	-- Guarded: the account-wide check is the newer of the two calls, and this
+	-- has to keep working if a build ever ships without it.
+	local onAccount = C_QuestLog.IsQuestFlaggedCompletedOnAccount
+		and C_QuestLog.IsQuestFlaggedCompletedOnAccount(ns.QUEST_ID)
+	state.doneToday = C_QuestLog.IsQuestFlaggedCompleted(ns.QUEST_ID) and true or false
+	state.doneByOther = (onAccount and not state.doneToday) and true or false
+
+	return state
+end
+
 --------------------------------------------------------------------------------
 -- State
 --------------------------------------------------------------------------------
@@ -231,6 +280,7 @@ function ns.BuildState()
 		shortfall   = {},   -- ingredient id -> how much of that you do not have
 		known       = criteria ~= nil,
 		onQuest     = ns.HasQuest(),
+		unlock      = ns.GetUnlockState(),
 	}
 
 	for _, ingredient in ipairs(ns.ingredients) do
@@ -292,13 +342,17 @@ end
 
 -- Should the window be open on its own account right now?
 function ns.ShouldAutoShow()
-	if not db.autoShow then
+	if not db.autoShow or not ns.IsTargetingOfi() then
 		return false
 	end
-	if db.requireQuest and not ns.HasQuest() then
-		return false
+	if not db.requireQuest then
+		return true
 	end
-	return ns.IsTargetingOfi()
+	-- Open when there is something to say: either the mix is in hand, or this
+	-- character cannot get it yet and the window can explain why. Requiring the
+	-- quest outright would leave an alt staring at Ofi with no idea what it is
+	-- missing, which is the one moment the window is most worth having.
+	return ns.HasQuest() or not ns.GetUnlockState().ready
 end
 
 --------------------------------------------------------------------------------

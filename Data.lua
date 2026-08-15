@@ -22,22 +22,30 @@ local KNUCKLEBONE = 276124
 local FEATHER     = 276126
 local PEARL       = 276117
 
--- All three ingredients come out of the same container, found as treasure around
--- The Coiled Isle. One bag can hold more than one kind, so there is no such
--- thing as "the place knucklebones come from" — `chance` is how often a bag
--- holds at least one of that ingredient, per Wowhead's loot sample.
---
--- (A widely-repeated tip has each ingredient near a different sort of mob. The
--- loot data does not support it: one bag, three ingredients.)
-ns.CONTAINER_ID   = 278084
-ns.CONTAINER_NAME = "Handful of Esoteric Ingredients"
-
 -- Display order of the three ingredient columns. `name` is the enUS name, used
 -- only until the client has the item cached and can hand back a localised one.
 ns.ingredients = {
-	{ id = KNUCKLEBONE, name = "Ancient Knucklebone", chance = 85 },
-	{ id = FEATHER,     name = "Serpent's Feather",   chance = 74 },
-	{ id = PEARL,       name = "Clouded Blood-Pearl", chance = 84 },
+	{ id = KNUCKLEBONE, name = "Ancient Knucklebone" },
+	{ id = FEATHER,     name = "Serpent's Feather" },
+	{ id = PEARL,       name = "Clouded Blood-Pearl" },
+}
+
+-- What a character has to have done before Ofi will offer the daily, in order.
+-- `name` is the enUS title, shown only until the client can supply a localised
+-- one through C_QuestLog.GetTitleForQuestID.
+--
+-- Campaign progress is per character, which is the whole reason this is worth
+-- tracking: the isle itself is a warband unlock, so an alt can stand in front
+-- of Ofi with no way to see what it is still missing.
+--
+-- Wowhead does not publish a prerequisite link for the daily, so this chain is
+-- read off the quests themselves: 92924 is what carries you to Tokka's Landing,
+-- and 97026 is the item-started quest that hands you in to Ofi. If a step turns
+-- out to be wrong the window simply names one quest too many, which is why the
+-- wording says "step N of M" rather than claiming these are the only gates.
+ns.unlockChain = {
+	{ questID = 92924, name = "What Lies Beyond the Fog", hint = "UNLOCK_ISLE" },
+	{ questID = 97026, name = "Esoteric Ingredients",     hint = "UNLOCK_ESOTERIC" },
 }
 
 -- The ten combinations, in the order Lazey's comment lists them, so the window

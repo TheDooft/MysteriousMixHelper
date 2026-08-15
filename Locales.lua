@@ -20,13 +20,14 @@ local L = {
 	NO_QUEST         = "Pick up Mixing Mysteries from Ofi to hand in a mix.",
 	CRITERIA_UNKNOWN = "Achievement progress unavailable — open the achievement once to load it.",
 
-	-- Where ingredients come from
-	TT_WHERE         = "Where to find it",
-	-- %s is the container's item name
-	TT_FROM          = "Opens out of %s, found as treasure around The Coiled Isle.",
-	-- %d is the share of containers holding at least one
-	TT_FROM_CHANCE   = "About %d%% of them hold at least one.",
-	TT_TRADABLE      = "Tradable, so the auction house is an option too.",
+	-- Unlocking the daily
+	UNLOCK_STEP      = "To unlock, step %d of %d:",
+	UNLOCK_TITLE     = "Unlocking Mixing Mysteries",
+	UNLOCK_ISLE      = "Follow the Curse of Ula'tek campaign until it takes you across to Tokka's Landing on The Coiled Isle.",
+	UNLOCK_ESOTERIC  = "Loot a Handful of Esoteric Ingredients on the isle, use it, and take the quest it starts to Ofi the Sly.",
+	UNLOCK_CAVEAT    = "Campaign progress is per character, so an alt has to walk this itself.",
+	DAILY_DONE       = "Today's mix is already spent — the quest returns tomorrow.",
+	DAILY_DONE_ALT   = "Another character has already mixed today. The daily is shared across your warband.",
 
 	-- Ingredient tooltips
 	TT_IN_BAGS       = "In your bags",
@@ -52,8 +53,8 @@ local L = {
 	OPT_AUTO_SHOW_TT = "Open the window automatically while you are on Mixing Mysteries and have Ofi the Sly targeted.",
 	OPT_AUTO_HIDE    = "Close when you look away",
 	OPT_AUTO_HIDE_TT = "Close the window again once Ofi is no longer your target. Turn this off to keep it open while you shop for ingredients.",
-	OPT_REQUIRE_QUEST = "Only with the quest in your log",
-	OPT_REQUIRE_QUEST_TT = "Open only when Mixing Mysteries is actually in your quest log. Turn this off to see the list whenever you target Ofi.",
+	OPT_REQUIRE_QUEST = "Only when there is something to say",
+	OPT_REQUIRE_QUEST_TT = "Open only when Mixing Mysteries is in your quest log, or when this character has not unlocked it yet and the window can explain what is left. Turn this off to see the list whenever you target Ofi.",
 	OPT_HIDE_DONE    = "Dim collected offerings",
 	OPT_HIDE_DONE_TT = "Grey out the combinations you have already turned in.",
 	OPT_SUGGEST      = "Mark a suggested mix",
@@ -94,10 +95,13 @@ local translations = {
 		NO_QUEST         = "Prenez « Mélanges mystérieux » chez Ofi pour rendre un mélange.",
 		CRITERIA_UNKNOWN = "Progression du haut fait indisponible — ouvrez-le une fois pour la charger.",
 
-		TT_WHERE         = "Où en trouver",
-		TT_FROM          = "S'ouvre depuis %s, un trésor à ramasser sur l'Île Lovée.",
-		TT_FROM_CHANCE   = "Environ %d%% d'entre eux en contiennent au moins un.",
-		TT_TRADABLE      = "Échangeable : l'hôtel des ventes est une option.",
+		UNLOCK_STEP      = "Pour débloquer, étape %d sur %d :",
+		UNLOCK_TITLE     = "Débloquer « Mélanges mystérieux »",
+		UNLOCK_ISLE      = "Suivez la campagne « La malédiction d'Ula'tek » jusqu'à ce qu'elle vous fasse traverser vers le Débarcadère de Tokka, sur l'Île Lovée.",
+		UNLOCK_ESOTERIC  = "Ramassez une poignée d'ingrédients ésotériques sur l'île, utilisez-la, et portez la quête qu'elle ouvre à Ofi le Malin.",
+		UNLOCK_CAVEAT    = "La progression de campagne est propre à chaque personnage : un reroll doit la refaire lui-même.",
+		DAILY_DONE       = "Le mélange du jour est déjà fait — la quête revient demain.",
+		DAILY_DONE_ALT   = "Un autre personnage a déjà fait le mélange aujourd'hui. La journalière est partagée par le bataillon.",
 
 		TT_IN_BAGS       = "Dans vos sacs",
 		TT_STORED        = "Rangés ailleurs",
@@ -119,8 +123,8 @@ local translations = {
 		OPT_AUTO_SHOW_TT = "Ouvre la fenêtre automatiquement quand vous avez « Mélanges mystérieux » et Ofi le Malin en cible.",
 		OPT_AUTO_HIDE    = "Fermer quand vous détournez le regard",
 		OPT_AUTO_HIDE_TT = "Referme la fenêtre dès qu'Ofi n'est plus votre cible. Désactivez pour la garder ouverte pendant vos achats de composants.",
-		OPT_REQUIRE_QUEST = "Seulement avec la quête dans le journal",
-		OPT_REQUIRE_QUEST_TT = "N'ouvre que si « Mélanges mystérieux » est réellement dans votre journal. Désactivez pour voir la liste dès que vous ciblez Ofi.",
+		OPT_REQUIRE_QUEST = "Seulement s'il y a quelque chose à dire",
+		OPT_REQUIRE_QUEST_TT = "N'ouvre que si « Mélanges mystérieux » est dans votre journal, ou si ce personnage ne l'a pas encore débloquée et que la fenêtre peut expliquer ce qu'il reste à faire. Désactivez pour voir la liste dès que vous ciblez Ofi.",
 		OPT_HIDE_DONE    = "Griser les offrandes obtenues",
 		OPT_HIDE_DONE_TT = "Estompe les combinaisons que vous avez déjà rendues.",
 		OPT_SUGGEST      = "Signaler un mélange conseillé",
