@@ -118,6 +118,7 @@ local function Region()
 	function region:SetColorTexture() end
 	function region:SetDesaturated(value) self.desaturated = value and true or false end
 	function region:SetBlendMode(mode) self.blend = mode end
+	function region:SetMask(path) self.mask = path end
 	function region:SetVertexColor() end
 	function region:SetAlpha(value) self.alpha = value end
 	function region:GetAlpha() return self.alpha or 1 end

@@ -37,18 +37,33 @@ local MISSING_HEX = "|cffee5555"
 -- square that suits a flat panel.
 local ICON_TRIM = { 0.07, 0.93, 0.07, 0.93 }
 
--- Ofi's cauldron, simmering behind the table. Blizzard's own loading spinner
--- ring, tinted and blended additively so it reads as a bubble on dark ground.
--- Kept very faint on purpose: this sits under ten rows of text it must never
--- compete with.
-local BUBBLE_TEXTURE = "Interface\\COMMON\\StreamCircle"
+-- Ofi's cauldron, simmering behind the table: soft discs of light rising and
+-- swaying, tinted green and blended additively. Faint on purpose — this sits
+-- under ten rows of text it must never compete with.
+--
+-- A bubble is a solid colour fill rounded off by the circular mask Blizzard
+-- uses on portraits — the same pairing it uses to round an arbitrary icon.
+-- Built this way rather than from a round texture file on purpose: a mask
+-- texture used directly can carry black in its colour channels, which under
+-- additive blending would come out as nothing at all. If the mask ever failed
+-- here the worst case is soft squares, which is a visible flaw rather than an
+-- invisible one.
+--
+-- An earlier pass used the loading spinner's StreamCircle. That is an *arc*,
+-- and once the bubbles grew past about 20px every one read as a crescent.
+local BUBBLE_MASK = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
 local BUBBLE_COLOR   = { 0.46, 1.00, 0.62 }
-local BUBBLE_COUNT   = 18
-local BUBBLE_ALPHA   = { 0.11, 0.34 }
-local BUBBLE_SIZE    = { 9, 38 }
+local BUBBLE_COUNT   = 16
+local BUBBLE_ALPHA   = { 0.12, 0.30 }
+local BUBBLE_SIZE    = { 10, 34 }
 local BUBBLE_SPEED   = { 10, 34 }   -- pixels a second
 local BUBBLE_SWAY    = { 3, 11 }    -- pixels either side of the rise
 local BUBBLE_INSET   = 4            -- above the bottom edge
+
+-- How much of its opacity the largest bubble gives up. A big disc at full
+-- strength is a blob; thinning it with size keeps the large ones reading as
+-- haze and lets the small ones stay crisp.
+local BUBBLE_SIZE_FADE = 0.55
 
 --------------------------------------------------------------------------------
 -- Layout
@@ -93,6 +108,7 @@ local programmaticHide, manualOpen, suppressed = false, false, false
 local BUBBLE_TRAVEL = HEIGHT - TITLE_H - BUBBLE_SIZE[2] - BUBBLE_INSET * 2
 ns.BUBBLE_TRAVEL = BUBBLE_TRAVEL
 ns.BUBBLE_COUNT, ns.BUBBLE_ALPHA = BUBBLE_COUNT, BUBBLE_ALPHA
+ns.BUBBLE_SIZE, ns.BUBBLE_SIZE_FADE = BUBBLE_SIZE, BUBBLE_SIZE_FADE
 
 -- The last state drawn, so a tooltip opening later can quote the same numbers
 -- the window is showing rather than recomputing them.
@@ -174,8 +190,10 @@ local function ResetBubble(bubble, atBottom)
 	bubble.speed = Between(BUBBLE_SPEED)
 	bubble.sway  = Between(BUBBLE_SWAY)
 	bubble.rate  = 0.5 + math.random() * 1.8
-	bubble.peak  = Between(BUBBLE_ALPHA)
 	bubble.phase = math.random() * math.pi * 2
+
+	local grown = (bubble.size - BUBBLE_SIZE[1]) / (BUBBLE_SIZE[2] - BUBBLE_SIZE[1])
+	bubble.peak = Between(BUBBLE_ALPHA) * (1 - BUBBLE_SIZE_FADE * grown)
 	-- On the first fill they are scattered up the window, so it is already
 	-- simmering when it opens rather than starting empty.
 	bubble.y     = atBottom and 0 or math.random() * BUBBLE_TRAVEL
@@ -208,9 +226,9 @@ local function CreateBubbles(parent)
 		-- Sub-level 2 puts them over the panel background; the rows are child
 		-- frames, so text and icons stay in front without any further ordering.
 		local texture = parent:CreateTexture(nil, "BACKGROUND", nil, 2)
-		texture:SetTexture(BUBBLE_TEXTURE)
+		texture:SetColorTexture(BUBBLE_COLOR[1], BUBBLE_COLOR[2], BUBBLE_COLOR[3], 1)
+		texture:SetMask(BUBBLE_MASK)
 		texture:SetBlendMode("ADD")
-		texture:SetVertexColor(unpack(BUBBLE_COLOR))
 		list[index] = { texture = texture }
 	end
 	return list

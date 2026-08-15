@@ -3,7 +3,7 @@
 ## Notes: At Ofi the Sly, shows every Mixing Mysteries combination, what you can make, and what the Mysterious Mix Master achievement still wants.
 ## Notes-frFR: Chez Ofi le Malin, affiche chaque combinaison de « Mélanges mystérieux », ce que vous pouvez faire, et ce qu'il manque au haut fait « Maître des mélanges mystérieux ».
 ## Author: TheDooft
-## Version: 1.7.0
+## Version: 1.8.0
 ## SavedVariables: MysteriousMixHelperDB
 ## Category: Quests
 ## Category-frFR: Quêtes

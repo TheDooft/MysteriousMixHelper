@@ -1,3 +1,14 @@
+# Changelog
+
+## v1.8.0
+
+- The bubbles are round again. They were drawn with the loading spinner's
+  StreamCircle, which is an arc, not a circle — invisible at 13px, but once
+  they grew to 38px every one read as a crescent. A bubble is now a colour fill
+  rounded off by the portrait mask, so it stays a clean circle at any size.
+- Opacity now comes off with size, so a large bubble reads as haze rather than
+  a blob while the small ones stay crisp.
+
 ## v1.7.0
 
 - Bigger bubbles: up to 38px across rather than 22, and swaying wider. Eighteen

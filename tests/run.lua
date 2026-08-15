@@ -307,6 +307,8 @@ check("back to the daily note when on the quest", has(H.footer.Note:GetText(), n
 print("=== the simmering cauldron ===")
 do
 	check("there are bubbles", #ns.bubbles == ns.BUBBLE_COUNT and ns.BUBBLE_COUNT > 0)
+	check("each is a fill rounded off by a mask, not a round texture file",
+		ns.bubbles[1].texture.mask ~= nil and ns.bubbles[1].texture.blend == "ADD")
 	check("they are scattered on the first fill, not all at the bottom",
 		ns.bubbles[1].y ~= ns.bubbles[2].y or ns.bubbles[2].y ~= ns.bubbles[3].y)
 
@@ -333,6 +335,24 @@ do
 		if bubble.sway > 0 and bubble.phase > 0 then swayed = true end
 	end
 	check("they sway as they rise", swayed)
+
+	-- A large disc at full strength reads as a blob, so opacity has to come off
+	-- with size. Compared at the extremes, where the rule has to hold whatever
+	-- the random draw was.
+	do
+		local smallest, largest
+		for _, bubble in ipairs(ns.bubbles) do
+			if not smallest or bubble.size < smallest.size then smallest = bubble end
+			if not largest or bubble.size > largest.size then largest = bubble end
+		end
+		local ceiling = function(size)
+			local grown = (size - ns.BUBBLE_SIZE[1]) / (ns.BUBBLE_SIZE[2] - ns.BUBBLE_SIZE[1])
+			return ns.BUBBLE_ALPHA[2] * (1 - ns.BUBBLE_SIZE_FADE * grown)
+		end
+		check("a big bubble is capped below a small one's ceiling",
+			largest.size == smallest.size or ceiling(largest.size) < ceiling(smallest.size))
+		check("and stays under its own cap", largest.peak <= ceiling(largest.size) + 1e-9)
+	end
 
 	SlashCmdList.MYSTERIOUSMIXHELPER("bubbles")
 	local hidden = true
