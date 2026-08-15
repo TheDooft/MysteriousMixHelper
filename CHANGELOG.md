@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.6.0
+
+- What plays behind the table is now a choice of three: nothing, the drawn
+  bubbles, or an effect model taken from the game. `/mmh brew off|bubbles|fx`,
+  or the "Behind the table" dropdown. An existing on/off setting carries over.
+- The bubbles are less shy — more of them, larger, and up to 32% opacity rather
+  than 13%.
+- The effect model's framing (alpha, scale, camera, position) can be dialled in
+  live with `/mmh fx <setting> <value>`, and `/mmh fx reset` puts it back. It is
+  saved per account, because there is no way to judge the framing of an .m2
+  outside the client.
+- Fixed the saved settings sharing the defaults table, which would have let a
+  changed value quietly rewrite the default it is meant to be restorable to.
+
 ## v1.5.0
 
 - Ofi's cauldron now simmers behind the table: faint bubbles rise, sway and

@@ -167,6 +167,21 @@ _G.CreateFrame = function(_, name, _, template)
 	function frame:UnregisterEvent(event) self.events[event] = nil end
 	function frame:CreateTexture() return Region() end
 	function frame:CreateFontString() return Region() end
+	function frame:GetFrameLevel() return self.level or 1 end
+	function frame:SetFrameLevel(value) self.level = value end
+
+	-- Model frames. Recorded rather than acted on, so a test can check the
+	-- framing the addon asked for.
+	function frame:SetModel(asset) self.model = asset end
+	function frame:GetModelFileID() return self.model end
+	function frame:ClearModel() self.model = nil end
+	function frame:MakeCurrentCameraCustom() self.customCamera = true end
+	function frame:SetCameraPosition(_, _, z) self.camera = z end
+	function frame:SetPosition(x, y, z) self.position = { x, y, z } end
+	function frame:SetModelScale(value) self.modelScale = value end
+	function frame:SetModelAlpha(value) self.modelAlpha = value end
+	function frame:SetModelDrawLayer(value) self.modelLayer = value end
+	function frame:SetSequenceTime(a, b) self.sequenceTime = { a, b } end
 
 	if template and template:find("BasicFrameTemplate", 1, true) then
 		frame.TitleText = Region()
