@@ -200,9 +200,19 @@ ce commentaire, et la fenêtre le rappelle sur le chaudron de sa barre de titre.
 
 ## Images
 
-**Avatar** — 400×400 PNG, required. The achievement's own icon
-(`inv_misc_cauldron_arcane`) is the obvious choice, since it is already the
-addon's icon in the addon list.
+**Avatar** — 400×400 PNG, required. Already made: **`docs/avatar-400.png`**.
+Upload it as it is.
+
+It is the achievement's own icon (`inv_misc_cauldron_arcane`, the same one the
+addon shows in the addon list) on the window's panel colour, with the title
+bar's gold as a frame and a couple of the green bubbles bleeding in from the
+edges. The icon takes 83% of the square on purpose: an avatar is looked at at
+64px far more often than at 400, and at that size the cauldron is the only part
+anyone can actually read.
+
+Regenerate it with `tools/New-Avatar.ps1` if the icon ever changes. It decodes
+the client's TGA through `Convert-Tga.ps1` and composes with System.Drawing —
+no ImageMagick needed.
 
 **Screenshots** — upload these directly on CurseForge; the repository does not
 carry them (`screenshots/` is in `.gitignore`). Worth having:
