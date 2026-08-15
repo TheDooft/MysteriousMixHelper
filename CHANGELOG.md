@@ -1,16 +1,17 @@
-# Changelog
+## v1.7.0
+
+- Bigger bubbles: up to 38px across rather than 22, and swaying wider. Eighteen
+  of them, so the window does not get crowded at that size.
+- Dropped the effect-model alternative introduced in 1.6 — it did not look good
+  in the client. Back to a plain on/off switch, and a setting saved by 1.6
+  carries over. `/mmh bubbles`.
 
 ## v1.6.0
 
-- What plays behind the table is now a choice of three: nothing, the drawn
-  bubbles, or an effect model taken from the game. `/mmh brew off|bubbles|fx`,
-  or the "Behind the table" dropdown. An existing on/off setting carries over.
+- Tried an in-game effect model behind the table as an alternative to the drawn
+  bubbles, with live framing controls. Removed again in 1.7; see that entry.
 - The bubbles are less shy — more of them, larger, and up to 32% opacity rather
   than 13%.
-- The effect model's framing (alpha, scale, camera, position) can be dialled in
-  live with `/mmh fx <setting> <value>`, and `/mmh fx reset` puts it back. It is
-  saved per account, because there is no way to judge the framing of an .m2
-  outside the client.
 - Fixed the saved settings sharing the defaults table, which would have let a
   changed value quietly rewrite the default it is meant to be restorable to.
 

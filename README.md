@@ -94,25 +94,15 @@ screen. Each option can also be toggled by name, e.g. `/mmh autoHide`.
 | `dimDone` | on | Grey out combinations you have already turned in. |
 | `suggest` | on | Mark a suggested mix. |
 | `showTotals` | on | Also show what you have in bank and warband bank. |
+| `bubbles` | on | Simmer the cauldron behind the table. Decoration only. |
 | `locked` | off | Stop the window being dragged. |
 
-### Behind the table
+The bubbles are drawn from Blizzard's `StreamCircle` ring, tinted green and
+blended additively. Their size, count, speed and opacity are the `BUBBLE_*`
+constants at the top of `UI.lua`.
 
-`/mmh brew off|bubbles|fx` picks what simmers behind the list — nothing, bubbles
-drawn by the addon, or an effect model taken from the game
-(`11fx_arakaracityofechoes_kikataltheharvester_venomvolley_precast`, file
-5749206).
-
-The model's framing cannot be judged outside the client, so it is adjustable
-rather than fixed:
-
-```
-/mmh fx
-```
-
-lists `alpha`, `scale`, `camera`, `x`, `y` and `z` with their current values and
-accepted ranges. `/mmh fx camera -60` pulls the camera back, `/mmh fx reset`
-returns to the shipped framing. The values are saved per account.
+An in-game effect model was tried here instead (v1.6, commit `2036755`) and did
+not look good in the client; the bubbles stayed.
 
 ## Development
 

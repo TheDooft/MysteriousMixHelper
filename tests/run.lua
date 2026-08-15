@@ -334,79 +334,27 @@ do
 	end
 	check("they sway as they rise", swayed)
 
-	SlashCmdList.MYSTERIOUSMIXHELPER("brew off")
+	SlashCmdList.MYSTERIOUSMIXHELPER("bubbles")
 	local hidden = true
 	for _, bubble in ipairs(ns.bubbles) do
 		if bubble.texture:IsShown() then hidden = false end
 	end
-	check("'brew off' puts them out", hidden)
+	check("the option puts them out", hidden)
 	local still = ns.bubbles[1].y
 	H.Tick(0.05, 10)
 	check("and stops the animation", ns.bubbles[1].y == still)
-	SlashCmdList.MYSTERIOUSMIXHELPER("brew bubbles")
+	SlashCmdList.MYSTERIOUSMIXHELPER("bubbles")
 	check("and lights them again", ns.bubbles[1].texture:IsShown())
-end
 
-print("=== the effect model as an alternative ===")
-SlashCmdList.MYSTERIOUSMIXHELPER("brew fx")
-do
-	local model = ns.fxModel
-	check("a model frame was made", model ~= nil)
-	check("carrying the effect's file id", model:GetModelFileID() == ns.FX_MODEL)
-	check("shown", model:IsShown())
-	check("drawn in the background", model.modelLayer == "BACKGROUND")
-	check("on the window's own frame level, so the rows stay in front",
-		model.level == ns.window:GetFrameLevel())
-	check("with a custom camera, as Blizzard does for a raw effect",
-		model.customCamera == true)
-	check("framed from the saved settings",
-		model.modelAlpha == ns.db.fx.alpha and model.camera == ns.db.fx.camera)
-
-	local hidden = true
-	for _, bubble in ipairs(ns.bubbles) do
-		if bubble.texture:IsShown() then hidden = false end
-	end
-	check("the bubbles stand down", hidden)
-
-	-- A one-shot effect has to be rewound or the window goes still.
-	model:GetScript("OnAnimFinished")(model)
-	check("it is rewound when the animation ends",
-		model.sequenceTime ~= nil and model.sequenceTime[1] == 0)
-end
-
-print("=== tuning the effect from chat ===")
-do
-	SlashCmdList.MYSTERIOUSMIXHELPER("fx alpha 0.8")
-	check("a setting takes", ns.db.fx.alpha == 0.8)
-	check("and reaches the model", ns.fxModel.modelAlpha == 0.8)
-
-	SlashCmdList.MYSTERIOUSMIXHELPER("fx camera -60")
-	check("negatives are accepted", ns.db.fx.camera == -60)
-
-	SlashCmdList.MYSTERIOUSMIXHELPER("fx alpha 9")
-	check("out of range is refused", ns.db.fx.alpha == 0.8 and has(H.chat[#H.chat], "alpha"))
-	SlashCmdList.MYSTERIOUSMIXHELPER("fx alpha banana")
-	check("so is nonsense", ns.db.fx.alpha == 0.8)
-	SlashCmdList.MYSTERIOUSMIXHELPER("fx nope 1")
-	check("an unknown setting is named back", has(H.chat[#H.chat], "nope"))
-
-	SlashCmdList.MYSTERIOUSMIXHELPER("fx")
-	check("bare /mmh fx lists them all", #H.chat > 6)
-
-	SlashCmdList.MYSTERIOUSMIXHELPER("fx reset")
-	check("reset restores the shipped framing",
-		ns.db.fx.alpha == 0.55 and ns.db.fx.camera == -25)
-	-- The saved settings must not be the defaults table itself, or tuning a
-	-- value would rewrite the default it is meant to be restorable to.
-	SlashCmdList.MYSTERIOUSMIXHELPER("fx alpha 0.2")
-	SlashCmdList.MYSTERIOUSMIXHELPER("fx reset")
-	check("and goes on doing so after a change", ns.db.fx.alpha == 0.55)
-
-	SlashCmdList.MYSTERIOUSMIXHELPER("brew nonsense")
-	check("an unknown style is refused", ns.db.brew == "fx" and has(H.chat[#H.chat], "nonsense"))
-	SlashCmdList.MYSTERIOUSMIXHELPER("brew bubbles")
-	check("and a known one is taken", ns.db.brew == "bubbles")
-	check("the model is cleared when it stands down", ns.fxModel:GetModelFileID() == nil)
+	-- 1.6 briefly made this a three-way choice. A saved setting from that build
+	-- has to survive the way back.
+	ns.db.brew, ns.db.fx = "off", { alpha = 1 }
+	ns.db.bubbles = nil
+	H.Fire("ADDON_LOADED", "MysteriousMixHelper")
+	check("an old brew setting is carried over", ns.db.bubbles == false)
+	check("and the effect's settings dropped", ns.db.brew == nil and ns.db.fx == nil)
+	ns.db.bubbles = true
+	ns.OnOptionChanged("bubbles")
 end
 
 print("=== credits ===")

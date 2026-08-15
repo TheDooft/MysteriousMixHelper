@@ -43,11 +43,11 @@ local ICON_TRIM = { 0.07, 0.93, 0.07, 0.93 }
 -- compete with.
 local BUBBLE_TEXTURE = "Interface\\COMMON\\StreamCircle"
 local BUBBLE_COLOR   = { 0.46, 1.00, 0.62 }
-local BUBBLE_COUNT   = 22
-local BUBBLE_ALPHA   = { 0.10, 0.32 }
-local BUBBLE_SIZE    = { 5, 22 }
+local BUBBLE_COUNT   = 18
+local BUBBLE_ALPHA   = { 0.11, 0.34 }
+local BUBBLE_SIZE    = { 9, 38 }
 local BUBBLE_SPEED   = { 10, 34 }   -- pixels a second
-local BUBBLE_SWAY    = { 2, 9 }     -- pixels either side of the rise
+local BUBBLE_SWAY    = { 3, 11 }    -- pixels either side of the rise
 local BUBBLE_INSET   = 4            -- above the bottom edge
 
 --------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ local NEED_Y   = PROG_Y + 20
 local NOTE_Y   = NEED_Y + 20
 local HEIGHT   = NOTE_Y + 22
 
-local frame, rows, headers, footer, bubbles, fxModel
+local frame, rows, headers, footer, bubbles
 local programmaticHide, manualOpen, suppressed = false, false, false
 
 -- How far a bubble climbs. Stops short of the title bar by its own largest
@@ -216,73 +216,20 @@ local function CreateBubbles(parent)
 	return list
 end
 
---------------------------------------------------------------------------------
--- The alternative: an effect model from the game
---------------------------------------------------------------------------------
-
--- Framing an .m2 is guesswork without the client in front of you, so every
--- number here is a saved setting the player can move with `/mmh fx`. This is
--- the same shape Blizzard uses for a raw effect model — see
--- RecruitActivityButtonModelMixin: set the model, then take the camera custom
--- once it has actually loaded.
-local function ApplyFxFraming(model)
-	local fx = ns.db.fx
-	model:MakeCurrentCameraCustom()
-	model:SetCameraPosition(0, 0, fx.camera)
-	model:SetPosition(fx.x, fx.y, fx.z)
-	model:SetModelScale(fx.scale)
-	model:SetModelAlpha(fx.alpha)
-	model:SetModelDrawLayer("BACKGROUND")
-end
-
-local function CreateFxModel(parent)
-	local model = CreateFrame("Model", nil, parent)
-	model:SetPoint("TOPLEFT", parent, "TOPLEFT", 1, -TITLE_H)
-	model:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -1, 1)
-	-- Sharing the window's own frame level keeps the model behind the rows,
-	-- which are children and so a level above.
-	model:SetFrameLevel(parent:GetFrameLevel())
-
-	model:SetScript("OnModelLoaded", function(self) ApplyFxFraming(self) end)
-	-- A precast effect may be built to play once. Rewinding on the way out
-	-- keeps it simmering either way, and costs nothing if it already loops.
-	model:SetScript("OnAnimFinished", function(self) self:SetSequenceTime(0, 0) end)
-
-	model:Hide()
-	return model
-end
-
---------------------------------------------------------------------------------
-
--- Called when the style changes and when the window opens.
-local function ApplyBrew()
-	local style = ns.db.brew
-
-	if bubbles then
-		for _, bubble in ipairs(bubbles) do
-			if style == "bubbles" then
-				ResetBubble(bubble, false)
-				bubble.texture:Show()
-			else
-				bubble.texture:Hide()
-			end
+-- Called when the option is toggled and when the window opens.
+local function ApplyBubbles()
+	if not bubbles then
+		return
+	end
+	for _, bubble in ipairs(bubbles) do
+		if ns.db.bubbles then
+			ResetBubble(bubble, false)
+			bubble.texture:Show()
+		else
+			bubble.texture:Hide()
 		end
 	end
-
-	if style == "fx" then
-		if not fxModel then
-			fxModel = CreateFxModel(frame)
-			ns.fxModel = fxModel
-		end
-		fxModel:SetModel(ns.FX_MODEL)
-		ApplyFxFraming(fxModel)
-		fxModel:Show()
-	elseif fxModel then
-		fxModel:Hide()
-		fxModel:ClearModel()
-	end
 end
-ns.ApplyBrew = ApplyBrew
 
 --------------------------------------------------------------------------------
 -- Ingredients
@@ -683,7 +630,7 @@ end
 
 local function ShowWindow()
 	frame:Show()
-	ApplyBrew()
+	ApplyBubbles()
 	ns.Refresh()
 end
 
@@ -733,8 +680,8 @@ end
 function ns.OnOptionChanged(key)
 	if key == "locked" and frame then
 		frame:SetMovable(not ns.db.locked)
-	elseif key == "brew" then
-		ApplyBrew()
+	elseif key == "bubbles" then
+		ApplyBubbles()
 	end
 	ns.Refresh()
 	UpdateVisibility()
@@ -826,7 +773,7 @@ function ns.InitWindow()
 	-- OnUpdate only runs while the frame is shown, so a closed window costs
 	-- nothing.
 	frame:SetScript("OnUpdate", function(_, elapsed)
-		if ns.db.brew == "bubbles" then
+		if ns.db.bubbles then
 			StepBubbles(elapsed)
 		end
 	end)

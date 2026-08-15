@@ -70,10 +70,4 @@ ns.combinations = {
 
 ns.ACHIEVEMENT_ICON = "Interface\\Icons\\inv_misc_cauldron_arcane"
 
--- An in-game effect model, offered as an alternative to the drawn bubbles for
--- what simmers behind the table. A looping venom cast: green, roiling, and
--- already the right sort of thing for Ofi's cauldron.
-ns.FX_MODEL = 5749206
-ns.FX_NAME  = "11fx_arakaracityofechoes_kikataltheharvester_venomvolley_precast"
-
 ns.INGREDIENTS_PER_MIX = 3

@@ -8,13 +8,8 @@ local defaults = {
 	dimDone      = true,
 	suggest      = true,
 	showTotals   = true,
+	bubbles      = true,
 	locked       = false,
-	-- What simmers behind the table: "off", "bubbles" or "fx".
-	brew         = "bubbles",
-	-- Framing for the effect model. There is no way to judge these outside the
-	-- client, so they are saved settings the player can dial in with
-	-- `/mmh fx <key> <value>` rather than constants only I could change.
-	fx           = { alpha = 0.55, scale = 1, camera = -25, x = 0, y = 0, z = 0 },
 	-- Window placement, filled in when the player drags it.
 	point        = nil,
 	x            = 0,
@@ -23,28 +18,9 @@ local defaults = {
 
 -- Order used by both the options panel and the slash command listing.
 local optionOrder = {
-	"autoShow", "autoHide", "requireQuest", "dimDone", "suggest", "showTotals", "locked",
+	"autoShow", "autoHide", "requireQuest", "dimDone", "suggest", "showTotals",
+	"bubbles", "locked",
 }
-
--- Styles for what plays behind the table, in the order the dropdown offers them.
-ns.brewStyles = { "off", "bubbles", "fx" }
-local brewLabels = {
-	off     = { L.BREW_OFF,     L.BREW_OFF_TT },
-	bubbles = { L.BREW_BUBBLES, L.BREW_BUBBLES_TT },
-	fx      = { L.BREW_FX,      L.BREW_FX_TT },
-}
-ns.brewLabels = brewLabels
-
--- Tunables for the effect model, and the range each will accept.
-local fxKeys = {
-	alpha  = { 0, 1 },
-	scale  = { 0.05, 20 },
-	camera = { -400, 400 },
-	x      = { -50, 50 },
-	y      = { -50, 50 },
-	z      = { -50, 50 },
-}
-ns.fxKeys = fxKeys
 
 local optionLabels = {
 	autoShow     = { L.OPT_AUTO_SHOW,     L.OPT_AUTO_SHOW_TT },
@@ -53,6 +29,7 @@ local optionLabels = {
 	dimDone      = { L.OPT_HIDE_DONE,     L.OPT_HIDE_DONE_TT },
 	suggest      = { L.OPT_SUGGEST,       L.OPT_SUGGEST_TT },
 	showTotals   = { L.OPT_SHOW_TOTALS,   L.OPT_SHOW_TOTALS_TT },
+	bubbles      = { L.OPT_BUBBLES,       L.OPT_BUBBLES_TT },
 	locked       = { L.OPT_LOCKED,        L.OPT_LOCKED_TT },
 }
 
@@ -413,30 +390,6 @@ local function RegisterSettings()
 		Settings.CreateCheckbox(category, setting, optionLabels[key][2])
 	end
 
-	local function GetBrewOptions()
-		local container = Settings.CreateControlTextContainer()
-		for _, style in ipairs(ns.brewStyles) do
-			container:Add(style, brewLabels[style][1], brewLabels[style][2])
-		end
-		return container:GetData()
-	end
-
-	local brewSetting = Settings.RegisterProxySetting(
-		category,
-		addonName .. "_brew",
-		Settings.VarType.String,
-		L.OPT_BREW,
-		defaults.brew,
-		function() return db.brew end,
-		function(value)
-			db.brew = value
-			if ns.OnOptionChanged then
-				ns.OnOptionChanged("brew")
-			end
-		end
-	)
-	Settings.CreateDropdown(category, brewSetting, GetBrewOptions, L.OPT_BREW_TT)
-
 	Settings.RegisterAddOnCategory(category)
 end
 
@@ -458,85 +411,15 @@ local function PrintOptions()
 			key, optionLabels[key][1], db[key] and L.SLASH_ON or L.SLASH_OFF
 		))
 	end
-	DEFAULT_CHAT_FRAME:AddMessage(string.format(
-		"  |cffffd100/mmh brew <off|bubbles|fx>|r — %s (%s)",
-		L.OPT_BREW, brewLabels[db.brew][1]))
 	DEFAULT_CHAT_FRAME:AddMessage("  " .. L.SLASH_CONFIG)
 	DEFAULT_CHAT_FRAME:AddMessage("  " .. L.SLASH_RESET)
 	DEFAULT_CHAT_FRAME:AddMessage("|cffffb833" .. L.THANKS_TITLE .. ":|r " .. L.THANKS_BODY)
 end
 
-local function SetBrew(value)
-	for _, style in ipairs(ns.brewStyles) do
-		if style == value then
-			db.brew = value
-			Print(string.format(L.BREW_SET, brewLabels[value][1]))
-			if ns.OnOptionChanged then
-				ns.OnOptionChanged("brew")
-			end
-			return
-		end
-	end
-	Print(string.format(L.BREW_UNKNOWN, value))
-end
-
--- Live tuning for the effect model. Its framing can only be judged in the
--- client, so it is adjusted from chat rather than guessed at in the source.
-local function TuneFx(key, value)
-	if key == "" then
-		Print(L.FX_CURRENT)
-		for _, name in ipairs({ "alpha", "scale", "camera", "x", "y", "z" }) do
-			DEFAULT_CHAT_FRAME:AddMessage(string.format(
-				"  |cffffd100/mmh fx %s <%g..%g>|r — %g",
-				name, fxKeys[name][1], fxKeys[name][2], db.fx[name]))
-		end
-		DEFAULT_CHAT_FRAME:AddMessage("  " .. L.FX_RESET_HINT)
-		return
-	end
-
-	if key == "reset" then
-		for name, value in pairs(defaults.fx) do
-			db.fx[name] = value
-		end
-		Print(L.FX_RESET_DONE)
-		if ns.OnOptionChanged then
-			ns.OnOptionChanged("brew")
-		end
-		return
-	end
-
-	local range = fxKeys[key]
-	if not range then
-		Print(string.format(L.FX_UNKNOWN, key))
-		return
-	end
-
-	local number = tonumber(value)
-	if not number or number < range[1] or number > range[2] then
-		Print(string.format(L.FX_RANGE, key, range[1], range[2]))
-		return
-	end
-
-	db.fx[key] = number
-	Print(string.format(L.FX_SET, key, number))
-	if ns.OnOptionChanged then
-		ns.OnOptionChanged("brew")
-	end
-end
-
 SLASH_MYSTERIOUSMIXHELPER1 = "/mmh"
 SLASH_MYSTERIOUSMIXHELPER2 = "/mixhelper"
 SlashCmdList.MYSTERIOUSMIXHELPER = function(input)
-	local argument, rest, extra = string.match(input or "", "^%s*(%S*)%s*(%S*)%s*(%S*)")
-	argument = string.lower(argument or "")
-
-	if argument == "brew" then
-		SetBrew(string.lower(rest or ""))
-		return
-	elseif argument == "fx" then
-		TuneFx(string.lower(rest or ""), extra)
-		return
-	end
+	local argument = string.lower(string.match(input or "", "^%s*(%S*)") or "")
 
 	if argument == "" then
 		if ns.ToggleWindow then
@@ -582,27 +465,17 @@ loader:SetScript("OnEvent", function(self, event, ...)
 		MysteriousMixHelperDB = MysteriousMixHelperDB or {}
 		db = MysteriousMixHelperDB
 
-		-- 1.5 had a plain on/off switch for the bubbles; 1.6 turned it into a
-		-- choice of what plays behind the table. Carry the old answer over.
-		if db.bubbles ~= nil then
-			db.brew = db.bubbles and "bubbles" or "off"
-			db.bubbles = nil
+		-- 1.6 briefly offered a choice of what played behind the table; 1.7 went
+		-- back to a plain switch. Carry whatever the player last chose over, and
+		-- drop the settings the effect model needed.
+		if db.brew ~= nil then
+			db.bubbles = db.brew ~= "off"
+			db.brew, db.fx = nil, nil
 		end
 
 		for key, value in pairs(defaults) do
-			if db[key] == nil and type(value) ~= "table" then
+			if db[key] == nil then
 				db[key] = value
-			end
-		end
-
-		-- Tables have to be copied, not referenced: assigning defaults.fx
-		-- straight across would leave the saved settings and the defaults as one
-		-- table, so changing a value would quietly rewrite the default it is
-		-- supposed to be restorable to.
-		db.fx = db.fx or {}
-		for key, value in pairs(defaults.fx) do
-			if db.fx[key] == nil then
-				db.fx[key] = value
 			end
 		end
 		ns.db = db
