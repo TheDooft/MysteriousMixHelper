@@ -71,15 +71,22 @@ local BUBBLE_SIZE_FADE = 0.55
 -- A masked texture gives a flat disc with one hard edge, which reads as a
 -- sticker rather than something glowing in a liquid. There is no radial
 -- gradient to be had from a texture and a mask, so each bubble is instead
--- built from several concentric discs; blended additively they sum to a bright
--- core falling away to nothing. Each entry is {share of the full size, share
--- of the bubble's opacity}, largest first.
-local BUBBLE_LAYERS = {
-	{ 1.00, 0.24 },
-	{ 0.76, 0.24 },
-	{ 0.52, 0.26 },
-	{ 0.28, 0.26 },
-}
+-- built from concentric discs; blended additively they sum to a bright core
+-- falling away to nothing.
+--
+-- Evenly spaced radii carrying equal opacity give a linear falloff, because the
+-- accumulated alpha at any radius is just the count of discs still covering it.
+-- The only thing steps buy is smoothness: four of them left visible rings on
+-- the larger bubbles, so this is generated rather than hand-written.
+local BUBBLE_LAYER_COUNT = 8
+local BUBBLE_LAYERS = {}
+for index = 1, BUBBLE_LAYER_COUNT do
+	-- {share of the full size, share of the bubble's opacity}, largest first.
+	BUBBLE_LAYERS[index] = {
+		1 - (index - 1) / BUBBLE_LAYER_COUNT,
+		1 / BUBBLE_LAYER_COUNT,
+	}
+end
 
 --------------------------------------------------------------------------------
 -- Layout
@@ -233,16 +240,14 @@ local function StepBubbles(elapsed)
 		-- Swell in off the bottom, thin out before the top: no bubble should
 		-- ever appear or vanish mid-window.
 		local fade = math.min(1, progress * 8) * math.min(1, (1 - progress) * 5)
-		local centreX = bubble.x + math.sin(bubble.phase) * bubble.sway + bubble.size / 2
-		local centreY = BUBBLE_INSET + bubble.y + bubble.size / 2
+		-- Only the outermost disc is placed; the rest are anchored to it.
+		bubble.textures[1]:ClearAllPoints()
+		bubble.textures[1]:SetPoint("CENTER", frame, "BOTTOMLEFT",
+			bubble.x + math.sin(bubble.phase) * bubble.sway + bubble.size / 2,
+			BUBBLE_INSET + bubble.y + bubble.size / 2)
 
-		-- Every layer shares one centre, so the discs stay concentric whatever
-		-- their sizes.
 		for index, layer in ipairs(BUBBLE_LAYERS) do
-			local texture = bubble.textures[index]
-			texture:SetAlpha(bubble.peak * layer[2] * fade)
-			texture:ClearAllPoints()
-			texture:SetPoint("CENTER", frame, "BOTTOMLEFT", centreX, centreY)
+			bubble.textures[index]:SetAlpha(bubble.peak * layer[2] * fade)
 		end
 	end
 end
@@ -263,6 +268,13 @@ local function CreateBubbles(parent)
 			texture:SetVertexColor(unpack(BUBBLE_COLOR))
 			texture:SetBlendMode("ADD")
 			bubble.textures[layer] = texture
+			-- The inner discs hang off the outermost one, so the animation only
+			-- ever has to move a single anchor per bubble however many layers
+			-- the falloff is made of. Anchoring by CENTER keeps them concentric
+			-- whatever their sizes.
+			if layer > 1 then
+				texture:SetPoint("CENTER", bubble.textures[1], "CENTER")
+			end
 		end
 		list[index] = bubble
 	end

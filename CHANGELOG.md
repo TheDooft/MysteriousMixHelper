@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.9.1
+
+- Smoothed the bubble falloff: four steps left visible rings on the larger
+  ones, so it is eight now and generated rather than hand-written. The inner
+  discs are anchored to the outermost, so the animation still moves one anchor
+  per bubble however many layers it is made of.
+
 ## v1.9.0
 
 - Bubbles glow instead of sitting flat. A masked texture can only give a solid

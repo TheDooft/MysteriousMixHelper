@@ -338,6 +338,15 @@ do
 		check("the outermost spans the full size", ns.BUBBLE_LAYERS[1][1] == 1)
 		check("and together they reach full opacity, not more",
 			math.abs(total - 1) < 0.02)
+		-- Four steps left visible rings on the larger bubbles in game.
+		check("enough steps that the falloff does not band", #ns.BUBBLE_LAYERS >= 6)
+
+		-- Only the outermost disc is positioned each frame; the rest hang off
+		-- it. Undoing that would multiply the animation's per-frame work by the
+		-- number of layers.
+		check("the inner discs are anchored to the outermost",
+			bubble.textures[2].anchor == bubble.textures[1]
+				and bubble.textures[#bubble.textures].anchor == bubble.textures[1])
 	end
 	check("they are scattered on the first fill, not all at the bottom",
 		ns.bubbles[1].y ~= ns.bubbles[2].y or ns.bubbles[2].y ~= ns.bubbles[3].y)

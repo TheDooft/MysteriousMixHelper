@@ -102,7 +102,9 @@ _G.UISpecialFrames = {}
 
 local function Region()
 	local region = { shown = true, r = 1, g = 1, b = 1 }
-	function region:SetPoint() end
+	-- The anchor is recorded so a test can tell a region positioned against the
+	-- window apart from one hung off a sibling.
+	function region:SetPoint(_, anchor) self.anchor = anchor end
 	function region:ClearAllPoints() end
 	function region:SetAllPoints() end
 	function region:SetSize() end
