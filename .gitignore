@@ -1,0 +1,13 @@
+# BigWigs packager output
+.release/
+*.zip
+
+# Carved out of CHANGELOG.md by the release workflow
+CHANGELOG-release.md
+
+# Local captures for the CurseForge project page, uploaded there directly
+screenshots/
+
+# Editors
+.vscode/
+.idea/
