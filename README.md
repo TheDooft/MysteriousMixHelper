@@ -130,6 +130,17 @@ differ (`unpack`, `strsplit`) are stubbed in `tests/harness.lua`.
 Release: `tools/Set-Version.ps1 <x.y.z> -Tag`, then push the tag. The workflow
 refuses to publish if the tag and the TOC version disagree.
 
+## Publishing
+
+The text for the CurseForge project page — summary, description, categories,
+licence — is in [docs/curseforge.md](docs/curseforge.md), ready to paste.
+Screenshots for that page go in [screenshots/](screenshots/README.md), which
+carries a shot list.
+
+Once the project exists, put its Project ID in the TOC as
+`## X-Curse-Project-ID:` and an author API token in the `CF_API_KEY` GitHub
+secret; the release workflow does the rest.
+
 ## Licence
 
 MIT.

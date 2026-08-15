@@ -5,8 +5,10 @@
 # Carved out of CHANGELOG.md by the release workflow
 CHANGELOG-release.md
 
-# Local captures for the CurseForge project page, uploaded there directly
-screenshots/
+# Local captures for the CurseForge project page, uploaded there directly.
+# The folder's README stays tracked so it survives a fresh clone.
+screenshots/*
+!screenshots/README.md
 
 # Editors
 .vscode/

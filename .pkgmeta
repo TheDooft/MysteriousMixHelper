@@ -16,5 +16,7 @@ ignore:
   - .gitignore
   - CHANGELOG-release.md
   - README.md
+  - docs
+  - screenshots
   - tests
   - tools
