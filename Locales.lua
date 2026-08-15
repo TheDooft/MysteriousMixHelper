@@ -20,6 +20,12 @@ local L = {
 	NO_QUEST         = "Pick up Mixing Mysteries from Ofi to hand in a mix.",
 	CRITERIA_UNKNOWN = "Achievement progress unavailable — open the achievement once to load it.",
 
+	-- Ingredient tooltips
+	TT_IN_BAGS       = "In your bags",
+	TT_STORED        = "Stored elsewhere",
+	TT_NEEDED        = "Wanted by the mixes you have left",
+	TT_SHORT_BY      = "Short by",
+
 	-- Row tooltips
 	TT_REQUIRES      = "Requires:",
 	TT_DONE          = "Already collected.",
@@ -73,6 +79,11 @@ local translations = {
 		DAILY_NOTE       = "Un mélange par jour, partagé avec tout le bataillon.",
 		NO_QUEST         = "Prenez « Mélanges mystérieux » chez Ofi pour rendre un mélange.",
 		CRITERIA_UNKNOWN = "Progression du haut fait indisponible — ouvrez-le une fois pour la charger.",
+
+		TT_IN_BAGS       = "Dans vos sacs",
+		TT_STORED        = "Rangés ailleurs",
+		TT_NEEDED        = "Réclamés par les mélanges qu'il vous reste",
+		TT_SHORT_BY      = "Il vous en manque",
 
 		TT_REQUIRES      = "Nécessite :",
 		TT_DONE          = "Déjà obtenue.",

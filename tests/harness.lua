@@ -98,6 +98,9 @@ local function Region()
 	function region:SetWidth() end
 	function region:SetHeight() end
 	function region:SetJustifyH() end
+	function region:SetShown(value) self.shown = value and true or false end
+	-- Enough of a measurement for the footer's chip layout to be exercised.
+	function region:GetStringWidth() return #(self.text or "") * 6 end
 	function region:SetTexture(value) self.texture = value end
 	function region:GetTexture() return self.texture end
 	function region:SetTexCoord() end
@@ -124,9 +127,11 @@ _G.CreateFrame = function(_, name, _, template)
 	function frame:ClearAllPoints() end
 	function frame:SetAllPoints() end
 	function frame:GetPoint() return "CENTER", nil, "CENTER", 0, 0 end
-	function frame:SetSize() end
-	function frame:SetWidth() end
+	function frame:SetSize(width) self.width = width end
+	function frame:SetWidth(width) self.width = width end
+	function frame:GetWidth() return self.width or 0 end
 	function frame:SetHeight() end
+	function frame:SetShown(value) if value then self:Show() else self:Hide() end end
 	function frame:SetFrameStrata() end
 	function frame:SetClampedToScreen() end
 	function frame:EnableMouse() end
@@ -241,6 +246,7 @@ local function Rows()
 			check = row.Check:IsShown(),
 			highlight = row.Highlight:IsShown(),
 			accent = row.Accent:IsShown(),
+			wash = row.Wash:IsShown(),
 			icon = row.Icon:GetTexture(),
 			dimmed = row.Icon.desaturated == true,
 			color = { row.Name.r, row.Name.g, row.Name.b },

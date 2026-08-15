@@ -19,9 +19,17 @@ local SUGGEST_BG  = { 1.00, 0.72, 0.20, 0.09 }
 local TEXT_BRIGHT = { 0.96, 0.96, 0.97 }
 local TEXT_DIM    = { 0.44, 0.45, 0.50 }
 local TEXT_LABEL  = { 0.55, 0.57, 0.64 }
-local READY       = { 0.42, 0.90, 0.48 }
-local DONE        = { 0.42, 0.44, 0.48 }
 local SHORT       = { 0.93, 0.34, 0.34 }
+
+-- The three row states have to be told apart at a glance, so each gets its own
+-- text colour, its own edge bar and — for collected — a wash and a tick. Keep
+-- these far apart: an earlier pass had "collected" and "cannot afford" a couple
+-- of hundredths from each other and the whole list read as one grey block.
+local READY       = { 0.42, 0.90, 0.48 }  -- not collected, and you can make it
+local TODO        = { 0.84, 0.85, 0.88 }  -- not collected, ingredients missing
+local DONE        = { 0.36, 0.47, 0.39 }  -- collected: dim, and green about it
+local DONE_WASH   = { 0.28, 0.85, 0.42, 0.055 }
+local DONE_BAR    = { 0.30, 0.78, 0.42, 0.55 }
 
 local MISSING_HEX = "|cffee5555"
 
@@ -39,6 +47,7 @@ local ROW_W    = WIDTH - PAD * 2
 local ROW_H    = 24
 local COL_W    = 62
 local ICON     = 18
+local TICK_W   = 18
 local COUNT    = #ns.ingredients
 
 -- Centre of each ingredient column, measured from the left edge of a row. The
@@ -47,7 +56,8 @@ local COL_X = {}
 for index = 1, COUNT do
 	COL_X[index] = ROW_W - (COUNT - index + 1) * COL_W + COL_W / 2
 end
-local NAME_X = ICON + 8
+local ICON_X = TICK_W
+local NAME_X = ICON_X + ICON + 8
 local NAME_W = COL_X[1] - COL_W / 2 - NAME_X - 8
 
 local TITLE_H  = 32
@@ -64,6 +74,10 @@ local HEIGHT   = NOTE_Y + 22
 
 local frame, rows, headers, footer
 local programmaticHide, manualOpen, suppressed = false, false, false
+
+-- The last state drawn, so a tooltip opening later can quote the same numbers
+-- the window is showing rather than recomputing them.
+local shown
 
 --------------------------------------------------------------------------------
 -- Small builders
@@ -126,9 +140,43 @@ local function Outline(parent, anchor, color, layer, spread)
 end
 
 --------------------------------------------------------------------------------
--- Header: one cell per ingredient, sitting above the column that spends it
+-- Ingredients
 --------------------------------------------------------------------------------
 
+-- The item's own tooltip, then the four numbers that matter for this addon.
+-- Used by both the column headers and the shopping list in the footer, so the
+-- two never drift apart.
+local function ShowIngredientTooltip(owner, ingredient)
+	GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+	GameTooltip:SetItemByID(ingredient.id)
+
+	if not shown then
+		GameTooltip:Show()
+		return
+	end
+
+	GameTooltip:AddLine(" ")
+	GameTooltip:AddDoubleLine(L.TT_IN_BAGS, shown.bags[ingredient.id],
+		unpack(TEXT_LABEL, 1, 3))
+	if shown.stored[ingredient.id] > 0 then
+		GameTooltip:AddDoubleLine(L.TT_STORED, shown.stored[ingredient.id],
+			unpack(TEXT_LABEL, 1, 3))
+	end
+
+	local needed = shown.stillNeed[ingredient.id]
+	if needed > 0 then
+		GameTooltip:AddDoubleLine(L.TT_NEEDED, needed, unpack(TEXT_LABEL, 1, 3))
+		local short = shown.shortfall[ingredient.id]
+		if short > 0 then
+			GameTooltip:AddDoubleLine(L.TT_SHORT_BY, short,
+				SHORT[1], SHORT[2], SHORT[3], SHORT[1], SHORT[2], SHORT[3])
+		end
+	end
+
+	GameTooltip:Show()
+end
+
+-- One cell per ingredient, sitting above the column that spends it.
 local function CreateHeaderCell(parent, index)
 	local ingredient = ns.ingredients[index]
 
@@ -147,14 +195,32 @@ local function CreateHeaderCell(parent, index)
 	cell.Stored = Text(parent, "GameFontDisableSmall",
 		PAD + COL_X[index] - COL_W / 2, STORED_Y, COL_W, "CENTER", TEXT_DIM)
 
-	cell:SetScript("OnEnter", function(self)
-		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-		GameTooltip:SetItemByID(ingredient.id)
-		GameTooltip:Show()
-	end)
+	cell:SetScript("OnEnter", function(self) ShowIngredientTooltip(self, ingredient) end)
 	cell:SetScript("OnLeave", GameTooltip_Hide)
 
 	return cell
+end
+
+-- An icon and an amount, side by side, in the footer's shopping list. A frame
+-- rather than a texture escape inside the label, so it can carry a tooltip.
+local function CreateNeedChip(parent, index)
+	local ingredient = ns.ingredients[index]
+
+	local chip = CreateFrame("Frame", nil, parent)
+	chip:SetHeight(16)
+	chip:EnableMouse(true)
+
+	chip.Icon = ItemIcon(chip, 14, "OVERLAY")
+	chip.Icon:SetPoint("LEFT")
+
+	chip.Count = chip:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	chip.Count:SetPoint("LEFT", chip.Icon, "RIGHT", 4, 0)
+
+	chip:SetScript("OnEnter", function(self) ShowIngredientTooltip(self, ingredient) end)
+	chip:SetScript("OnLeave", GameTooltip_Hide)
+	chip:Hide()
+
+	return chip
 end
 
 --------------------------------------------------------------------------------
@@ -216,6 +282,11 @@ local function CreateRow(parent, index)
 		zebra:SetAllPoints()
 	end
 
+	-- A wash across collected rows: the loudest of the three cues that say so.
+	row.Wash = Fill(row, "BACKGROUND", DONE_WASH)
+	row.Wash:SetAllPoints()
+	row.Wash:Hide()
+
 	row.Highlight = Fill(row, "BACKGROUND", SUGGEST_BG)
 	row.Highlight:SetAllPoints()
 	row.Highlight:Hide()
@@ -231,17 +302,18 @@ local function CreateRow(parent, index)
 	row.Accent:SetWidth(2)
 	row.Accent:Hide()
 
-	row.Icon = ItemIcon(row, ICON)
-	row.Icon:SetPoint("LEFT", row, "LEFT", 0, 0)
-	row.IconEdge = Outline(row, row.Icon, { 1, 1, 1, 0.12 })
-
-	-- The collected tick rides on the corner of the offering's own icon.
+	-- The tick gets a slot of its own rather than riding on the icon's corner,
+	-- where it was too small to carry the meaning on its own.
 	row.Check = row:CreateTexture(nil, "OVERLAY")
 	row.Check:SetTexture("Interface\\AchievementFrame\\UI-Achievement-Criteria-Check")
 	row.Check:SetTexCoord(0, 0.65625, 0, 1)
-	row.Check:SetSize(14, 11)
-	row.Check:SetPoint("BOTTOMRIGHT", row.Icon, "BOTTOMRIGHT", 4, -3)
+	row.Check:SetSize(16, 13)
+	row.Check:SetPoint("LEFT", row, "LEFT", 0, 0)
 	row.Check:Hide()
+
+	row.Icon = ItemIcon(row, ICON)
+	row.Icon:SetPoint("LEFT", row, "LEFT", ICON_X, 0)
+	row.IconEdge = Outline(row, row.Icon, { 1, 1, 1, 0.12 })
 
 	row.Name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	row.Name:SetPoint("LEFT", row, "LEFT", NAME_X, 0)
@@ -303,33 +375,40 @@ local function DrawRow(row, state, entry)
 	row.Icon:SetTexture(ns.GetItemIconFile(entry.combination.itemID))
 	row.Name:SetText(entry.displayName)
 
+	-- Three states, three treatments. Collected wins over everything: it never
+	-- competes with the suggestion, because there is nothing left to suggest.
 	local color
 	if entry.done then
 		color = ns.db.dimDone and DONE or TEXT_BRIGHT
 		row.Check:Show()
-		row.Icon:SetDesaturated(ns.db.dimDone)
-		row.Icon:SetAlpha(ns.db.dimDone and 0.5 or 1)
-	else
-		row.Check:Hide()
-		row.Icon:SetDesaturated(false)
-		row.Icon:SetAlpha(entry.affordable and 1 or 0.65)
-		color = entry.affordable and READY or TEXT_DIM
-	end
-	row.Name:SetTextColor(color[1], color[2], color[3])
-
-	if row.suggested and not entry.done then
-		row.Highlight:Show()
-		row.Accent:SetColorTexture(ACCENT[1], ACCENT[2], ACCENT[3], 1)
-		row.Accent:Show()
-	else
+		row.Wash:SetShown(ns.db.dimDone)
 		row.Highlight:Hide()
-		if not entry.done and entry.affordable then
-			row.Accent:SetColorTexture(READY[1], READY[2], READY[3], 0.75)
+		row.Accent:SetColorTexture(unpack(DONE_BAR))
+		row.Accent:Show()
+		row.Icon:SetDesaturated(ns.db.dimDone)
+		row.Icon:SetAlpha(ns.db.dimDone and 0.45 or 1)
+	else
+		color = entry.affordable and READY or TODO
+		row.Check:Hide()
+		row.Wash:Hide()
+		row.Icon:SetDesaturated(false)
+		row.Icon:SetAlpha(entry.affordable and 1 or 0.8)
+
+		if row.suggested then
+			row.Highlight:Show()
+			row.Accent:SetColorTexture(ACCENT[1], ACCENT[2], ACCENT[3], 1)
 			row.Accent:Show()
 		else
-			row.Accent:Hide()
+			row.Highlight:Hide()
+			if entry.affordable then
+				row.Accent:SetColorTexture(READY[1], READY[2], READY[3], 0.75)
+				row.Accent:Show()
+			else
+				row.Accent:Hide()
+			end
 		end
 	end
+	row.Name:SetTextColor(color[1], color[2], color[3])
 
 	for column, ingredient in ipairs(ns.ingredients) do
 		local need = entry.combination.counts[ingredient.id]
@@ -367,24 +446,46 @@ local function DrawFooter(state)
 
 	footer.Bar:SetWidth(math.max(1, ROW_W * (state.known and state.completed or 0) / total))
 
+	-- The shopping list: a label, then one hoverable chip per ingredient still
+	-- wanted. Laid out left to right from wherever the label happens to end,
+	-- which is a different place in every language.
+	local anyShort = false
+	for _, ingredient in ipairs(ns.ingredients) do
+		if state.shortfall[ingredient.id] > 0 then
+			anyShort = true
+			break
+		end
+	end
+
 	if state.remaining == 0 then
 		footer.Need:SetText("")
+	elseif not anyShort then
+		footer.Need:SetText(L.NOTHING_MISSING)
 	else
-		local parts, anyShort = {}, false
-		for _, ingredient in ipairs(ns.ingredients) do
-			local need = state.stillNeed[ingredient.id]
-			if need > 0 then
-				if state.shortfall[ingredient.id] > 0 then
-					anyShort = true
-					table.insert(parts, ns.GetItemIcon(ingredient.id) .. MISSING_HEX .. need .. "|r")
-				else
-					table.insert(parts, ns.GetItemIcon(ingredient.id) .. need)
-				end
+		footer.Need:SetText(L.STILL_NEED)
+	end
+
+	local x = PAD + footer.Need:GetStringWidth() + 10
+	for index, ingredient in ipairs(ns.ingredients) do
+		local chip = footer.Chips[index]
+		local need = state.stillNeed[ingredient.id]
+		if state.remaining == 0 or not anyShort or need == 0 then
+			chip:Hide()
+		else
+			chip.Icon:SetTexture(ns.GetItemIconFile(ingredient.id))
+			if state.shortfall[ingredient.id] > 0 then
+				chip.Count:SetText(need)
+				chip.Count:SetTextColor(unpack(SHORT))
+			else
+				chip.Count:SetText(need)
+				chip.Count:SetTextColor(unpack(TEXT_BRIGHT))
 			end
+			chip:SetWidth(14 + 4 + chip.Count:GetStringWidth())
+			chip:ClearAllPoints()
+			chip:SetPoint("LEFT", frame, "TOPLEFT", x, -(NEED_Y + 6))
+			chip:Show()
+			x = x + chip:GetWidth() + 14
 		end
-		footer.Need:SetText(anyShort
-			and (L.STILL_NEED .. "  " .. table.concat(parts, "   "))
-			or L.NOTHING_MISSING)
 	end
 
 	footer.Note:SetText(state.onQuest and L.DAILY_NOTE or L.NO_QUEST)
@@ -397,6 +498,7 @@ function ns.Refresh()
 	end
 
 	local state = ns.BuildState()
+	shown = state
 	DrawHeader(state)
 	for index, entry in ipairs(state.rows) do
 		DrawRow(rows[index], state, entry)
@@ -579,9 +681,14 @@ function ns.InitWindow()
 
 	footer = {
 		Progress = Text(frame, "GameFontNormalSmall", PAD, PROG_Y, ROW_W, "LEFT", TEXT_BRIGHT),
-		Need     = Text(frame, "GameFontHighlightSmall", PAD, NEED_Y, ROW_W, "LEFT", TEXT_BRIGHT),
+		-- No fixed width: GetStringWidth is what the chips are laid out against.
+		Need     = Text(frame, "GameFontHighlightSmall", PAD, NEED_Y, nil, "LEFT", TEXT_BRIGHT),
 		Note     = Text(frame, "GameFontDisableSmall", PAD, NOTE_Y, ROW_W, "LEFT", TEXT_DIM),
+		Chips    = {},
 	}
+	for index = 1, COUNT do
+		footer.Chips[index] = CreateNeedChip(frame, index)
+	end
 
 	-- A thin progress bar along the very bottom edge: ten criteria, one window.
 	local track = Fill(frame, "ARTWORK", { 1, 1, 1, 0.05 })

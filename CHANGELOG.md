@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.2.0
+
+- Collected offerings are far easier to pick out: the tick has a column of its
+  own instead of riding on the icon's corner, and the row gets a green wash and
+  a green edge bar. The three row states now use text colours that are actually
+  far apart — previously "collected" and "cannot afford" were within a few
+  hundredths of each other and the list read as one grey block.
+- The icons in the "still need in total" line are real controls now, so hovering
+  one shows the ingredient, what you carry, what you have stored, how much the
+  combinations you have left still want, and the shortfall. The column headers
+  show the same tooltip.
+
 ## v1.1.0
 
 - Each combination now shows the icon of the offering it produces, with the

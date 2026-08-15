@@ -181,7 +181,55 @@ check("the eight left want 6 pearls", state.stillNeed[PEARL] == 6)
 -- one is the offering item it asks you to loot, not the criterion's own id. Both
 -- are wrong in the harness on purpose, so this only passes on the asset.
 check("matched by asset, not by position", ns.BuildState().rows[CHOLERIC].done == true)
-check("collected rows are dimmed", Render()[CHOLERIC].done and H.Rows()[CHOLERIC].dimmed)
+
+print("=== telling the three row states apart ===")
+-- With nothing in the bags, every unfinished row is "cannot afford". If that
+-- treatment sits too close to the collected one the whole list reads as one
+-- grey block, which is exactly what the first pass got wrong.
+SetBags(0, 0, 0)
+do
+	local drawn = H.Rows()
+	local done, todo = drawn[CHOLERIC], drawn[EERIE]
+	check("the collected row is ticked", done.check and not todo.check)
+	check("and washed", done.wash and not todo.wash)
+	check("and carries an edge bar", done.accent and not todo.accent)
+	check("and its icon is greyed", done.dimmed and not todo.dimmed)
+
+	local distance = math.abs(done.color[1] - todo.color[1])
+		+ math.abs(done.color[2] - todo.color[2])
+		+ math.abs(done.color[3] - todo.color[3])
+	check("and the two text colours are far apart, not " .. string.format("%.2f", distance),
+		distance > 0.6)
+end
+
+print("=== the shopping list carries tooltips ===")
+do
+	local chips = H.footer.Chips
+	check("one chip per ingredient still wanted", chips[1]:IsShown() and chips[3]:IsShown())
+
+	for index = 1, #ns.ingredients do
+		-- A chip with no width would stack on its neighbours at the same spot.
+		check("chip " .. index .. " is wider than its icon", chips[index]:GetWidth() > 14)
+	end
+
+	local chip = chips[2]
+	chip:GetScript("OnEnter")(chip)
+	local text = strip(table.concat(H.tooltip.lines, "\n"))
+	check("names the ingredient item", has(text, "item:" .. ns.ingredients[2].id))
+	check("reports what is in your bags", has(text, ns.L.TT_IN_BAGS))
+	check("and how much the remaining mixes want", has(text, ns.L.TT_NEEDED))
+	check("and the shortfall", has(text, ns.L.TT_SHORT_BY))
+end
+
+-- The column headers use the same tooltip, so the two never disagree.
+do
+	local cell = ns.headers[1]
+	cell:GetScript("OnEnter")(cell)
+	check("the column header agrees",
+		has(strip(table.concat(H.tooltip.lines, "\n")), ns.L.TT_NEEDED))
+end
+
+SetBags(0, 0, 3)
 
 print("=== when the criteria carry no asset ===")
 H.SetCriteria({ "Choleric Offering" }, { noAsset = true })
