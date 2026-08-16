@@ -63,6 +63,17 @@ local BUBBLE_SPEED   = { 10, 34 }   -- pixels a second
 local BUBBLE_SWAY    = { 3, 11 }    -- pixels either side of the rise
 local BUBBLE_INSET   = 4            -- above the bottom edge
 
+-- The flourish when a row is credited. Driven by hand off the window's own
+-- OnUpdate rather than an AnimationGroup: the animation runs beside the
+-- cauldron on the same tick, and there is nothing here that cannot be read off
+-- the source. Seconds from the tick landing to the row settling down.
+local FLASH_TIME  = 1.4
+local FLASH_WASH  = { 0.40, 1.00, 0.55, 0.34 }
+local FLASH_POP   = 0.8   -- how much larger the tick starts before settling
+
+-- The criteria tick's resting size, kept here because the flourish scales it.
+local CHECK_W, CHECK_H = 16, 13
+
 -- How much of its opacity the largest bubble gives up. A big disc at full
 -- strength is a blob; thinning it with size keeps the large ones reading as
 -- haze and lets the small ones stay crisp.
@@ -330,6 +341,17 @@ local function ShowIngredientTooltip(owner, ingredient)
 		end
 	end
 
+	-- Where to get more. Wrapped, which is why the colours are spelled out
+	-- rather than unpacked — the wrap flag has to come last.
+	local source = L.SOURCE_NAMES and L.SOURCE_NAMES[ingredient.source]
+	if source then
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine(L.TT_WHERE, ACCENT[1], ACCENT[2], ACCENT[3])
+		GameTooltip:AddLine(string.format(L.TT_FROM, source), 1, 1, 1, true)
+		GameTooltip:AddLine(L.TT_TRADABLE,
+			TEXT_LABEL[1], TEXT_LABEL[2], TEXT_LABEL[3], true)
+	end
+
 	GameTooltip:Show()
 end
 
@@ -452,6 +474,12 @@ local function CreateRow(parent, index)
 	row.Hover:SetAllPoints()
 	row.Hover:Hide()
 
+	-- Sits above the row's other washes so the flourish reads over any of them.
+	row.Flash = Fill(row, "ARTWORK", FLASH_WASH)
+	row.Flash:SetAllPoints()
+	row.Flash:SetAlpha(0)
+	row.Flash:Hide()
+
 	-- A short bar at the left edge, the row's status at a glance.
 	row.Accent = Fill(row, "ARTWORK", ACCENT)
 	row.Accent:SetPoint("TOPLEFT", row, "TOPLEFT", -PAD + 4, -3)
@@ -498,6 +526,36 @@ local function CreateRow(parent, index)
 	return row
 end
 
+-- One frame of the flourish. Split out so starting a flash can paint its first
+-- frame at once rather than waiting for the next tick.
+local function PaintFlash(row)
+	if not row.flash then
+		row.Flash:SetAlpha(0)
+		row.Flash:Hide()
+		row.Check:SetSize(CHECK_W, CHECK_H)
+		return
+	end
+	-- A sine over the life of the flash: nothing, up, and back to nothing, with
+	-- no edge at either end.
+	row.Flash:SetAlpha(math.sin(math.pi * (1 - row.flash)))
+	local pop = 1 + FLASH_POP * row.flash * row.flash
+	row.Check:SetSize(CHECK_W * pop, CHECK_H * pop)
+end
+
+-- Runs the flourish on any row that has just been credited: the wash swells and
+-- falls away, and the tick lands oversized and settles.
+local function StepFlashes(elapsed)
+	for _, row in ipairs(rows) do
+		if row.flash then
+			row.flash = row.flash - elapsed / FLASH_TIME
+			if row.flash <= 0 then
+				row.flash = nil
+			end
+			PaintFlash(row)
+		end
+	end
+end
+
 --------------------------------------------------------------------------------
 -- Drawing
 --------------------------------------------------------------------------------
@@ -528,6 +586,16 @@ end
 local function DrawRow(row, state, entry)
 	row.state = entry
 	row.suggested = ns.db.suggest and state.suggested == entry
+
+	-- Only a row credited while the player was watching gets the flourish.
+	-- `seen` is cleared every time the window opens, so the first draw of a
+	-- session never sets ten rows off at once.
+	if row.seen and entry.done and not row.wasDone then
+		row.flash = 1
+		row.Flash:Show()
+		PaintFlash(row)
+	end
+	row.wasDone, row.seen = entry.done, true
 
 	row.Icon:SetTexture(ns.GetItemIconFile(entry.combination.itemID))
 	row.Name:SetText(entry.displayName)
@@ -696,12 +764,28 @@ end
 local function ShowWindow()
 	frame:Show()
 	ApplyBubbles()
+	-- Forget what the rows looked like last time, so opening the window is
+	-- never mistaken for ten offerings being credited at once.
+	if rows then
+		for _, row in ipairs(rows) do
+			row.seen, row.flash = false, nil
+			row.Flash:SetAlpha(0)
+			row.Flash:Hide()
+			row.Check:SetSize(16, 13)
+		end
+	end
 	ns.Refresh()
 end
 
 local function UpdateVisibility()
 	if not frame then
 		return
+	end
+
+	if not ns.IsTargetingOfi() then
+		-- Walking away ends the grace the turn-in bought; the next visit is
+		-- judged on its own merits.
+		ns.NoteTurnIn(false)
 	end
 
 	if not ns.ShouldAutoShow() then
@@ -841,6 +925,9 @@ function ns.InitWindow()
 		if ns.db.bubbles then
 			StepBubbles(elapsed)
 		end
+		if rows then
+			StepFlashes(elapsed)
+		end
 	end)
 
 	if ns.db.point then
@@ -958,7 +1045,14 @@ function ns.InitWindow()
 	}) do
 		events:RegisterEvent(event)
 	end
-	events:SetScript("OnEvent", function(_, event)
+	events:SetScript("OnEvent", function(_, event, ...)
+		-- Handing in the mix takes the quest straight back out of the log, so
+		-- the window has to be told to hold its ground before anything else
+		-- reconsiders whether it should be open.
+		if event == "QUEST_TURNED_IN" and ... == ns.QUEST_ID then
+			ns.NoteTurnIn(true)
+		end
+
 		if event == "PLAYER_TARGET_CHANGED" or event == "QUEST_ACCEPTED"
 			or event == "QUEST_REMOVED" or event == "QUEST_TURNED_IN" then
 			UpdateVisibility()

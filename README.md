@@ -45,6 +45,26 @@ client's language without the addon shipping a translation.
 | Eerie | 2 | 1 | |
 | Balanced | 1 | 1 | 1 |
 
+## Where the ingredients come from
+
+Each has its own treasure on the isle, and hovering an ingredient in the window
+says which:
+
+| Ingredient | Treasure |
+|---|---|
+| Ancient Knucklebone | [Cracked Canopic Jar](https://www.wowhead.com/object=654991) |
+| Serpent's Feather | [Venom-Clotted Bauble](https://www.wowhead.com/object=656039) |
+| Clouded Blood-Pearl | [Singing Shell](https://www.wowhead.com/object=656044) |
+
+They are tradable, so the auction house works too once the daily is unlocked.
+
+Note that Wowhead's item pages list only the quest's own bag as a source and its
+commenters contradict each other on this, so the mapping above comes from
+hunting them in game rather than from the database. Game objects have no name
+API either, which is why those three names sit in `Locales.lua` — they are the
+only strings in the addon that have to be translated by hand rather than read
+out of the client.
+
 ## Unlocking the daily
 
 On a character that cannot take the quest yet, the bottom line of the window

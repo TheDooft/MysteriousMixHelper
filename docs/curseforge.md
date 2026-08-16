@@ -73,7 +73,7 @@ otherwise. Thank you.
 
 Ofi la Sournoise réclame trois ingrédients pour son ragoût. Trois sortes, données
 une par une, répétitions autorisées — soit dix combinaisons, dix offrandes
-différentes, et le haut fait **Maître des mélanges mystérieux** les veut toutes.
+différentes, et le haut fait **Mystérieuse maîtrise des mixtures** les veut toutes.
 Elle ne vous souffle rien pendant que vous choisissez, et la quête est
 journalière et partagée par tout le bataillon : une erreur coûte une journée à
 tous vos personnages.

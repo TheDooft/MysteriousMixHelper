@@ -107,7 +107,7 @@ local function Region()
 	function region:SetPoint(_, anchor) self.anchor = anchor end
 	function region:ClearAllPoints() end
 	function region:SetAllPoints() end
-	function region:SetSize() end
+	function region:SetSize(width, height) self.width, self.height = width, height end
 	function region:SetWidth() end
 	function region:SetHeight() end
 	function region:SetJustifyH() end

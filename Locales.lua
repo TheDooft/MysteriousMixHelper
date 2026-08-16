@@ -34,6 +34,18 @@ local L = {
 	TT_STORED        = "Stored elsewhere",
 	TT_NEEDED        = "Wanted by the mixes you have left",
 	TT_SHORT_BY      = "Short by",
+	TT_WHERE         = "Where to find it",
+	-- %s is the treasure's name from SOURCE_NAMES below
+	TT_FROM          = "Looted from %s, out on the isle.",
+	TT_TRADABLE      = "Tradable, so the auction house is an option too.",
+
+	-- Game objects have no name API, so unlike items and quests these cannot be
+	-- read out of the client and have to be translated by hand.
+	SOURCE_NAMES     = {
+		[654991] = "Cracked Canopic Jar",
+		[656039] = "Venom-Clotted Bauble",
+		[656044] = "Singing Shell",
+	},
 
 	-- Row tooltips
 	TT_REQUIRES      = "Requires:",
@@ -94,12 +106,12 @@ local translations = {
 		STILL_NEED       = "Reste à réunir au total :",
 		NOTHING_MISSING  = "Vous avez de quoi faire toutes les combinaisons qu'il vous reste.",
 		DAILY_NOTE       = "Un mélange par jour, partagé avec tout le bataillon.",
-		NO_QUEST         = "Prenez « Mélanges mystérieux » chez Ofi pour rendre un mélange.",
+		NO_QUEST         = "Prenez « Mixture mystère » chez Ofi pour rendre un mélange.",
 		CRITERIA_UNKNOWN = "Progression du haut fait indisponible — ouvrez-le une fois pour la charger.",
 
 		UNLOCK_STEP      = "Pour débloquer, étape %d sur %d :",
-		UNLOCK_TITLE     = "Débloquer « Mélanges mystérieux »",
-		UNLOCK_ISLE      = "Suivez la campagne « La malédiction d'Ula'tek » jusqu'à ce qu'elle vous fasse traverser vers le Débarcadère de Tokka, sur l'Île Lovée.",
+		UNLOCK_TITLE     = "Débloquer « Mixture mystère »",
+		UNLOCK_ISLE      = "Suivez la campagne « La malédiction d'Ula'tek » jusqu'à ce qu'elle vous fasse traverser vers l'Île Annelée.",
 		UNLOCK_ESOTERIC  = "Ramassez une poignée d'ingrédients ésotériques sur l'île, utilisez-la, et portez la quête qu'elle ouvre à Ofi la Sournoise.",
 		UNLOCK_CAVEAT    = "La progression de campagne est propre à chaque personnage : un reroll doit la refaire lui-même.",
 		DAILY_DONE       = "Le mélange du jour est déjà fait — la quête revient demain.",
@@ -109,6 +121,15 @@ local translations = {
 		TT_STORED        = "Rangés ailleurs",
 		TT_NEEDED        = "Réclamés par les mélanges qu'il vous reste",
 		TT_SHORT_BY      = "Il vous en manque",
+		TT_WHERE         = "Où en trouver",
+		TT_FROM          = "Se ramasse dans %s, sur l'île.",
+		TT_TRADABLE      = "Échangeable : l'hôtel des ventes est une option.",
+
+		SOURCE_NAMES     = {
+			[654991] = "Jarre canope fissurée",
+			[656039] = "Babiole en venin coagulé",
+			[656044] = "Carapace chantante",
+		},
 
 		TT_REQUIRES      = "Nécessite :",
 		TT_DONE          = "Déjà obtenue.",
@@ -122,11 +143,11 @@ local translations = {
 		THANKS_BODY      = "Le tableau des combinaisons est l'œuvre de Lazey, tiré de son commentaire sur la page du haut fait « Mysterious Mix Master » de Wowhead. Sans lui, il aurait fallu gâcher un grand nombre de quêtes journalières pour le reconstituer.",
 
 		OPT_AUTO_SHOW    = "Ouvrir chez Ofi la Sournoise",
-		OPT_AUTO_SHOW_TT = "Ouvre la fenêtre automatiquement quand vous avez « Mélanges mystérieux » et Ofi la Sournoise en cible.",
+		OPT_AUTO_SHOW_TT = "Ouvre la fenêtre automatiquement quand vous avez « Mixture mystère » et Ofi la Sournoise en cible.",
 		OPT_AUTO_HIDE    = "Fermer quand vous détournez le regard",
 		OPT_AUTO_HIDE_TT = "Referme la fenêtre dès qu'Ofi n'est plus votre cible. Désactivez pour la garder ouverte pendant vos achats de composants.",
 		OPT_REQUIRE_QUEST = "Seulement s'il y a quelque chose à dire",
-		OPT_REQUIRE_QUEST_TT = "N'ouvre que si « Mélanges mystérieux » est dans votre journal, ou si ce personnage ne l'a pas encore débloquée et que la fenêtre peut expliquer ce qu'il reste à faire. Désactivez pour voir la liste dès que vous ciblez Ofi.",
+		OPT_REQUIRE_QUEST_TT = "N'ouvre que si « Mixture mystère » est dans votre journal, ou si ce personnage ne l'a pas encore débloquée et que la fenêtre peut expliquer ce qu'il reste à faire. Désactivez pour voir la liste dès que vous ciblez Ofi.",
 		OPT_HIDE_DONE    = "Griser les offrandes obtenues",
 		OPT_HIDE_DONE_TT = "Estompe les combinaisons que vous avez déjà rendues.",
 		OPT_SUGGEST      = "Signaler un mélange conseillé",

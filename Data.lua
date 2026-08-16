@@ -24,10 +24,16 @@ local PEARL       = 276117
 
 -- Display order of the three ingredient columns. `name` is the enUS name, used
 -- only until the client has the item cached and can hand back a localised one.
+--
+-- Each ingredient has its own treasure on the isle. Wowhead's item pages list
+-- only the quest's own bag as a source, and two of its commenters flatly
+-- contradict each other about this, so the object ids below come from the
+-- player's own hunting rather than from the database. There is no API that
+-- gives a game object's name, so those are in the locale table.
 ns.ingredients = {
-	{ id = KNUCKLEBONE, name = "Ancient Knucklebone" },
-	{ id = FEATHER,     name = "Serpent's Feather" },
-	{ id = PEARL,       name = "Clouded Blood-Pearl" },
+	{ id = KNUCKLEBONE, name = "Ancient Knucklebone", source = 654991 },
+	{ id = FEATHER,     name = "Serpent's Feather",   source = 656039 },
+	{ id = PEARL,       name = "Clouded Blood-Pearl", source = 656044 },
 }
 
 -- What a character has to have done before Ofi will offer the daily, in order.

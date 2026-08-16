@@ -234,6 +234,21 @@ do
 	check("reports what is in your bags", has(text, ns.L.TT_IN_BAGS))
 	check("and how much the remaining mixes want", has(text, ns.L.TT_NEEDED))
 	check("and the shortfall", has(text, ns.L.TT_SHORT_BY))
+	check("and where to get more", has(text, ns.L.TT_WHERE))
+	check("naming that ingredient's own treasure",
+		has(text, ns.L.SOURCE_NAMES[ns.ingredients[2].source]))
+end
+
+-- Each ingredient has its own treasure; sharing one would be the old, wrong
+-- reading of the loot data.
+do
+	local seen = {}
+	for _, ingredient in ipairs(ns.ingredients) do
+		check("ingredient " .. ingredient.name .. " has a named source",
+			ingredient.source and ns.L.SOURCE_NAMES[ingredient.source] ~= nil)
+		check("and it is its own", not seen[ingredient.source])
+		seen[ingredient.source] = true
+	end
 end
 
 print("=== unlocking the daily on a fresh character ===")
@@ -303,6 +318,64 @@ end
 H.SetQuest(true)
 H.Fire("QUEST_LOG_UPDATE")
 check("back to the daily note when on the quest", has(H.footer.Note:GetText(), ns.L.DAILY_NOTE))
+
+print("=== handing the mix in ===")
+-- The sequence from a real turn-in: standing at Ofi with the quest, hand it
+-- over, the quest leaves the log, the criterion lands. The window used to shut
+-- on the second step, taking the tick with it.
+H.SetQuest(true)
+H.Unlock()
+H.SetTarget(OFI)
+H.SetCriteria({})
+H.Fire("CRITERIA_UPDATE")
+check("open with the quest in hand", H.window:IsShown())
+check("Phlegmatic not yet credited", not Render()[PHLEGMATIC].done)
+
+H.SetQuest(false)
+H.questDone[ns.QUEST_ID] = true
+H.Fire("QUEST_TURNED_IN", ns.QUEST_ID)
+check("the window stays put when the quest leaves the log", H.window:IsShown())
+
+H.SetCriteria({ "Phlegmatic Offering" })
+H.Fire("CRITERIA_UPDATE")
+check("and the new tick lands on it", Render()[PHLEGMATIC].done)
+check("the footer explains the quest is gone",
+	has(H.footer.Note:GetText(), ns.L.DAILY_DONE))
+
+print("=== the flourish on a credited row ===")
+do
+	local row = ns.rows[PHLEGMATIC]
+	check("the row is flashing", row.flash ~= nil and row.Flash:IsShown())
+	check("and only that row", ns.rows[EERIE].flash == nil)
+	check("the tick lands oversized", row.Check.width > 16)
+
+	-- Runs up, then down, then stops touching anything.
+	H.Tick(0.05, 12)
+	local peak = row.Flash:GetAlpha()
+	check("the wash swells", peak > 0.3)
+	H.Tick(0.05, 40)
+	check("the flourish ends", row.flash == nil and not row.Flash:IsShown())
+	check("and the tick settles back", row.Check.width == 16)
+end
+
+-- Reopening the window must not read as ten offerings landing at once.
+H.SetTarget(nil)
+H.SetTarget(OFI)
+do
+	local flashing = 0
+	for _, row in ipairs(ns.rows) do
+		if row.flash then flashing = flashing + 1 end
+	end
+	check("reopening sets nothing off", flashing == 0)
+	check("though the window did reopen", H.window:IsShown())
+end
+
+H.questDone[ns.QUEST_ID] = nil
+H.SetQuest(true)
+H.SetCriteria({})
+H.Fire("CRITERIA_UPDATE")
+H.SetTarget(nil)
+H.SetTarget(OFI)
 
 print("=== the simmering cauldron ===")
 do

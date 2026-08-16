@@ -343,6 +343,14 @@ function ns.BuildState()
 	return state
 end
 
+-- Set the moment today's mix is handed in. The quest leaves the log at that
+-- instant, so without this the window would vanish exactly when the new tick
+-- is about to appear on it — the one frame the player most wants to see.
+local justTurnedIn = false
+function ns.NoteTurnIn(value)
+	justTurnedIn = value and true or false
+end
+
 -- Should the window be open on its own account right now?
 function ns.ShouldAutoShow()
 	if not db.autoShow or not ns.IsTargetingOfi() then
@@ -351,11 +359,18 @@ function ns.ShouldAutoShow()
 	if not db.requireQuest then
 		return true
 	end
-	-- Open when there is something to say: either the mix is in hand, or this
-	-- character cannot get it yet and the window can explain why. Requiring the
-	-- quest outright would leave an alt staring at Ofi with no idea what it is
-	-- missing, which is the one moment the window is most worth having.
-	return ns.HasQuest() or not ns.GetUnlockState().ready
+
+	-- Open when there is something to say. Requiring the quest outright would
+	-- leave an alt staring at Ofi with no idea what it is missing, and would
+	-- slam the window shut on the turn-in.
+	if ns.HasQuest() or justTurnedIn then
+		return true
+	end
+
+	local unlock = ns.GetUnlockState()
+	-- Not ready: what is left to do. Already spent: why there is no quest to
+	-- pick up. Both are worth a window.
+	return not unlock.ready or unlock.doneToday or unlock.doneByOther
 end
 
 --------------------------------------------------------------------------------

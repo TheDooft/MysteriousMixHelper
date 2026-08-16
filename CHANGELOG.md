@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.1.0
+
+- The window no longer slams shut the moment you hand the mix in. Turning the
+  quest in takes it out of your log, which used to fail the "are you on the
+  quest" test and close the window on the exact frame the new tick was about to
+  appear. It now holds its ground, and stays available at Ofi for the rest of
+  the day to say the mix is already spent.
+- A row credited while you are watching gets a flourish: a green wash swells
+  and fades, and the tick lands oversized and settles.
+- Ingredient tooltips say which treasure to look for — Cracked Canopic Jar,
+  Venom-Clotted Bauble, Singing Shell — one per ingredient.
+- French corrections: the quest is *Mixture mystère*, the achievement
+  *Mystérieuse maîtrise des mixtures*, and the zone *Île Annelée*. All three
+  were names this addon had invented rather than looked up.
+
 ## v1.0.0
 
 First release.
